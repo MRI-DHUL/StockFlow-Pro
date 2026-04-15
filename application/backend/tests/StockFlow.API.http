@@ -1,0 +1,416 @@
+### StockFlow Pro API - Manual Testing
+### REST Client for VS Code
+### Install extension: humao.rest-client
+
+@baseUrl = http://localhost:5057
+@apiVersion = v1
+
+### Variables (will be set after login)
+@accessToken = your-access-token-here
+@refreshToken = your-refresh-token-here
+@productId = your-product-id-here
+@warehouseId = your-warehouse-id-here
+@inventoryId = your-inventory-id-here
+
+###############################################
+### 1. AUTHENTICATION
+###############################################
+
+### 1.1 Register New User
+POST {{baseUrl}}/api/{{apiVersion}}/auth/register
+Content-Type: application/json
+
+{
+  "email": "newuser@test.com",
+  "password": "Test@123",
+  "firstName": "New",
+  "lastName": "User"
+}
+
+### 1.2 Login (Default Admin)
+POST {{baseUrl}}/api/{{apiVersion}}/auth/login
+Content-Type: application/json
+
+{
+  "email": "admin@stockflow.com",
+  "password": "Admin@123"
+}
+
+### 1.3 Login (New User)
+POST {{baseUrl}}/api/{{apiVersion}}/auth/login
+Content-Type: application/json
+
+{
+  "email": "newuser@test.com",
+  "password": "Test@123"
+}
+
+### 1.4 Refresh Token
+POST {{baseUrl}}/api/{{apiVersion}}/auth/refresh-token
+Content-Type: application/json
+
+{
+  "accessToken": "{{accessToken}}",
+  "refreshToken": "{{refreshToken}}"
+}
+
+### 1.5 Revoke Token (Logout)
+POST {{baseUrl}}/api/{{apiVersion}}/auth/revoke-token
+Content-Type: application/json
+
+{
+  "refreshToken": "{{refreshToken}}"
+}
+
+###############################################
+### 2. PRODUCTS
+###############################################
+
+### 2.1 Get All Products
+GET {{baseUrl}}/api/{{apiVersion}}/products
+Authorization: Bearer {{accessToken}}
+
+### 2.2 Get Products (Paginated)
+GET {{baseUrl}}/api/{{apiVersion}}/products/paged?PageNumber=1&PageSize=10&SearchTerm=laptop&SortBy=Name&SortDescending=false
+Authorization: Bearer {{accessToken}}
+
+### 2.3 Get Product by ID
+GET {{baseUrl}}/api/{{apiVersion}}/products/{{productId}}
+Authorization: Bearer {{accessToken}}
+
+### 2.4 Create Product
+POST {{baseUrl}}/api/{{apiVersion}}/products
+Authorization: Bearer {{accessToken}}
+Content-Type: application/json
+
+{
+  "name": "Dell XPS 15 Laptop",
+  "sku": "LAPTOP-XPS15-001",
+  "category": "Electronics",
+  "unitPrice": 1499.99,
+  "description": "High-performance laptop with Intel Core i7, 16GB RAM, 512GB SSD"
+}
+
+### 2.5 Update Product
+PUT {{baseUrl}}/api/{{apiVersion}}/products/{{productId}}
+Authorization: Bearer {{accessToken}}
+Content-Type: application/json
+
+{
+  "name": "Dell XPS 15 Laptop (Updated)",
+  "sku": "LAPTOP-XPS15-001",
+  "category": "Electronics",
+  "unitPrice": 1399.99,
+  "description": "Updated price - High-performance laptop"
+}
+
+### 2.6 Delete Product (Soft Delete)
+DELETE {{baseUrl}}/api/{{apiVersion}}/products/{{productId}}
+Authorization: Bearer {{accessToken}}
+
+###############################################
+### 3. WAREHOUSES
+###############################################
+
+### 3.1 Get All Warehouses
+GET {{baseUrl}}/api/{{apiVersion}}/warehouses
+Authorization: Bearer {{accessToken}}
+
+### 3.2 Get Warehouse by ID
+GET {{baseUrl}}/api/{{apiVersion}}/warehouses/{{warehouseId}}
+Authorization: Bearer {{accessToken}}
+
+### 3.3 Create Warehouse
+POST {{baseUrl}}/api/{{apiVersion}}/warehouses
+Authorization: Bearer {{accessToken}}
+Content-Type: application/json
+
+{
+  "name": "North Warehouse",
+  "location": "123 North Street, New York, NY 10001",
+  "contactInfo": "contact@north-warehouse.com | +1-555-0123"
+}
+
+### 3.4 Update Warehouse
+PUT {{baseUrl}}/api/{{apiVersion}}/warehouses/{{warehouseId}}
+Authorization: Bearer {{accessToken}}
+Content-Type: application/json
+
+{
+  "name": "North Warehouse (Updated)",
+  "location": "123 North Street, New York, NY 10001",
+  "contactInfo": "updated@north-warehouse.com | +1-555-0123"
+}
+
+### 3.5 Delete Warehouse
+DELETE {{baseUrl}}/api/{{apiVersion}}/warehouses/{{warehouseId}}
+Authorization: Bearer {{accessToken}}
+
+###############################################
+### 4. INVENTORY
+###############################################
+
+### 4.1 Get All Inventory
+GET {{baseUrl}}/api/{{apiVersion}}/inventory
+Authorization: Bearer {{accessToken}}
+
+### 4.2 Get Inventory (Paginated)
+GET {{baseUrl}}/api/{{apiVersion}}/inventory/paged?PageNumber=1&PageSize=10
+Authorization: Bearer {{accessToken}}
+
+### 4.3 Get Low Stock Items
+GET {{baseUrl}}/api/{{apiVersion}}/inventory/low-stock
+Authorization: Bearer {{accessToken}}
+
+### 4.4 Get Inventory by ID
+GET {{baseUrl}}/api/{{apiVersion}}/inventory/{{inventoryId}}
+Authorization: Bearer {{accessToken}}
+
+### 4.5 Create Inventory Record
+POST {{baseUrl}}/api/{{apiVersion}}/inventory
+Authorization: Bearer {{accessToken}}
+Content-Type: application/json
+
+{
+  "productId": "{{productId}}",
+  "warehouseId": "{{warehouseId}}",
+  "quantity": 100,
+  "threshold": 20
+}
+
+### 4.6 Update Inventory
+PUT {{baseUrl}}/api/{{apiVersion}}/inventory/{{inventoryId}}
+Authorization: Bearer {{accessToken}}
+Content-Type: application/json
+
+{
+  "productId": "{{productId}}",
+  "warehouseId": "{{warehouseId}}",
+  "quantity": 150,
+  "threshold": 25
+}
+
+### 4.7 Delete Inventory
+DELETE {{baseUrl}}/api/{{apiVersion}}/inventory/{{inventoryId}}
+Authorization: Bearer {{accessToken}}
+
+###############################################
+### 5. ORDERS
+###############################################
+
+### 5.1 Get All Orders
+GET {{baseUrl}}/api/{{apiVersion}}/orders
+Authorization: Bearer {{accessToken}}
+
+### 5.2 Get Orders (Paginated)
+GET {{baseUrl}}/api/{{apiVersion}}/orders/paged?PageNumber=1&PageSize=10
+Authorization: Bearer {{accessToken}}
+
+### 5.3 Get Order by ID
+GET {{baseUrl}}/api/{{apiVersion}}/orders/{orderId}
+Authorization: Bearer {{accessToken}}
+
+### 5.4 Create Order
+POST {{baseUrl}}/api/{{apiVersion}}/orders
+Authorization: Bearer {{accessToken}}
+Content-Type: application/json
+
+{
+  "customerName": "John Doe",
+  "customerEmail": "john.doe@example.com",
+  "shippingAddress": "456 Main Street, Los Angeles, CA 90001",
+  "orderItems": [
+    {
+      "productId": "{{productId}}",
+      "quantity": 2,
+      "unitPrice": 1499.99
+    }
+  ]
+}
+
+### 5.5 Update Order
+PUT {{baseUrl}}/api/{{apiVersion}}/orders/{orderId}
+Authorization: Bearer {{accessToken}}
+Content-Type: application/json
+
+{
+  "customerName": "John Doe",
+  "customerEmail": "john.doe@example.com",
+  "shippingAddress": "456 Main Street, Los Angeles, CA 90001",
+  "status": "Processing",
+  "orderItems": [
+    {
+      "productId": "{{productId}}",
+      "quantity": 3,
+      "unitPrice": 1499.99
+    }
+  ]
+}
+
+### 5.6 Delete Order
+DELETE {{baseUrl}}/api/{{apiVersion}}/orders/{orderId}
+Authorization: Bearer {{accessToken}}
+
+###############################################
+### 6. SUPPLIERS
+###############################################
+
+### 6.1 Get All Suppliers
+GET {{baseUrl}}/api/{{apiVersion}}/suppliers
+Authorization: Bearer {{accessToken}}
+
+### 6.2 Get Supplier by ID
+GET {{baseUrl}}/api/{{apiVersion}}/suppliers/{supplierId}
+Authorization: Bearer {{accessToken}}
+
+### 6.3 Create Supplier
+POST {{baseUrl}}/api/{{apiVersion}}/suppliers
+Authorization: Bearer {{accessToken}}
+Content-Type: application/json
+
+{
+  "name": "Tech Supplies Inc.",
+  "email": "contact@techsupplies.com",
+  "phone": "+1-555-9876",
+  "address": "789 Supply Street, Chicago, IL 60601"
+}
+
+### 6.4 Update Supplier
+PUT {{baseUrl}}/api/{{apiVersion}}/suppliers/{supplierId}
+Authorization: Bearer {{accessToken}}
+Content-Type: application/json
+
+{
+  "name": "Tech Supplies Inc. (Updated)",
+  "email": "info@techsupplies.com",
+  "phone": "+1-555-9876",
+  "address": "789 Supply Street, Chicago, IL 60601"
+}
+
+### 6.5 Delete Supplier
+DELETE {{baseUrl}}/api/{{apiVersion}}/suppliers/{supplierId}
+Authorization: Bearer {{accessToken}}
+
+###############################################
+### 7. PURCHASE ORDERS
+###############################################
+
+### 7.1 Get All Purchase Orders
+GET {{baseUrl}}/api/{{apiVersion}}/purchaseorders
+Authorization: Bearer {{accessToken}}
+
+### 7.2 Get Purchase Order by ID
+GET {{baseUrl}}/api/{{apiVersion}}/purchaseorders/{purchaseOrderId}
+Authorization: Bearer {{accessToken}}
+
+### 7.3 Create Purchase Order
+POST {{baseUrl}}/api/{{apiVersion}}/purchaseorders
+Authorization: Bearer {{accessToken}}
+Content-Type: application/json
+
+{
+  "supplierId": "{supplierId}",
+  "expectedDeliveryDate": "2026-05-01",
+  "purchaseOrderItems": [
+    {
+      "productId": "{{productId}}",
+      "quantity": 50,
+      "unitPrice": 1200.00
+    }
+  ]
+}
+
+### 7.4 Update Purchase Order
+PUT {{baseUrl}}/api/{{apiVersion}}/purchaseorders/{purchaseOrderId}
+Authorization: Bearer {{accessToken}}
+Content-Type: application/json
+
+{
+  "supplierId": "{supplierId}",
+  "status": "Confirmed",
+  "expectedDeliveryDate": "2026-05-01",
+  "purchaseOrderItems": [
+    {
+      "productId": "{{productId}}",
+      "quantity": 60,
+      "unitPrice": 1200.00
+    }
+  ]
+}
+
+### 7.5 Delete Purchase Order
+DELETE {{baseUrl}}/api/{{apiVersion}}/purchaseorders/{purchaseOrderId}
+Authorization: Bearer {{accessToken}}
+
+###############################################
+### 8. STOCK MOVEMENTS
+###############################################
+
+### 8.1 Get All Stock Movements
+GET {{baseUrl}}/api/{{apiVersion}}/stockmovements
+Authorization: Bearer {{accessToken}}
+
+### 8.2 Get Stock Movement by ID
+GET {{baseUrl}}/api/{{apiVersion}}/stockmovements/{movementId}
+Authorization: Bearer {{accessToken}}
+
+### 8.3 Create Stock Movement
+POST {{baseUrl}}/api/{{apiVersion}}/stockmovements
+Authorization: Bearer {{accessToken}}
+Content-Type: application/json
+
+{
+  "productId": "{{productId}}",
+  "warehouseId": "{{warehouseId}}",
+  "movementType": "IN",
+  "quantity": 50,
+  "reference": "PO-2026-001",
+  "movementDate": "2026-04-15T10:30:00Z"
+}
+
+### 8.4 Delete Stock Movement
+DELETE {{baseUrl}}/api/{{apiVersion}}/stockmovements/{movementId}
+Authorization: Bearer {{accessToken}}
+
+###############################################
+### 9. AUDIT LOGS (Admin Only)
+###############################################
+
+### 9.1 Get Audit Logs (Paginated)
+GET {{baseUrl}}/api/{{apiVersion}}/auditlogs/paged?PageNumber=1&PageSize=20&SortDescending=true
+Authorization: Bearer {{accessToken}}
+
+### 9.2 Get Audit Log by ID
+GET {{baseUrl}}/api/{{apiVersion}}/auditlogs/{auditLogId}
+Authorization: Bearer {{accessToken}}
+
+### 9.3 Filter Audit Logs by Entity
+GET {{baseUrl}}/api/{{apiVersion}}/auditlogs/paged?EntityName=Product&Action=Update&PageSize=50
+Authorization: Bearer {{accessToken}}
+
+###############################################
+### 10. HEALTH CHECKS
+###############################################
+
+### 10.1 Overall Health Check
+GET {{baseUrl}}/health
+
+### 10.2 Readiness Check
+GET {{baseUrl}}/health/ready
+
+### 10.3 Liveness Check
+GET {{baseUrl}}/health/live
+
+###############################################
+### 11. HANGFIRE DASHBOARD
+###############################################
+
+### 11.1 Open Hangfire Dashboard
+# Open in browser: {{baseUrl}}/hangfire
+
+###############################################
+### 12. SWAGGER DOCUMENTATION
+###############################################
+
+### 12.1 Open Swagger UI
+# Open in browser: {{baseUrl}}/swagger
