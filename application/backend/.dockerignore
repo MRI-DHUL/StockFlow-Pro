@@ -1,0 +1,55 @@
+# Docker ignore file for StockFlow Pro Backend
+
+# Build artifacts
+**/bin/
+**/obj/
+**/out/
+**/publish/
+
+# User-specific files
+*.user
+*.suo
+*.cache
+
+# IDE folders
+.vs/
+.vscode/
+.idea/
+
+# NuGet packages
+*.nupkg
+**/packages/
+
+# Test results
+TestResults/
+*.trx
+*.coverage
+
+# Logs
+**/Logs/
+*.log
+
+# Database files
+*.db
+*.db-shm
+*.db-wal
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Git
+.git/
+.gitignore
+.gitattributes
+
+# Documentation
+*.md
+!README.md
+
+# Migration files (optional - uncomment if you want to exclude)
+# **/Migrations/
+
+# Configuration files (keep structure but values will be replaced)
+# appsettings.Development.json
+# appsettings.Production.json

@@ -1,0 +1,56 @@
+name: Deploy to Railway
+
+on:
+  push:
+    branches:
+      - railway
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+
+      - name: Restore dependencies
+        run: dotnet restore
+        working-directory: ./application/backend
+
+      - name: Build
+        run: dotnet build --configuration Release --no-restore
+        working-directory: ./application/backend
+
+      - name: Publish
+        run: dotnet publish -c Release -o ./publish
+        working-directory: ./application/backend/src/StockFlow.API
+
+      - name: Install Railway CLI
+        run: npm install -g @railway/cli
+
+      - name: Deploy to Railway
+        run: railway up
+        env:
+          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
+        working-directory: ./application/backend/src/StockFlow.API/publish
+
+---
+# Railway Configuration
+# Create this in your Railway project settings or use railway.json
+
+# Environment Variables needed in Railway:
+# - ConnectionStrings__DefaultConnection
+# - JwtSettings__SecretKey
+# - JwtSettings__Issuer
+# - JwtSettings__Audience
+# - GmailSettings__SenderEmail
+# - GmailSettings__SenderPassword
+# - PusherSettings__AppId
+# - PusherSettings__Key
+# - PusherSettings__Secret
