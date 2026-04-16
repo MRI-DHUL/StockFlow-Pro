@@ -1,0 +1,157 @@
+<div class="auth-container">
+  <div class="auth-card">
+    <div class="auth-header">
+      <h1>Create Account</h1>
+      <p>Join StockFlow Pro to manage your inventory efficiently.</p>
+    </div>
+
+    @if (error()) {
+      <div class="alert alert-error">
+        {{ error() }}
+      </div>
+    }
+
+    @if (success()) {
+      <div class="alert alert-success">
+        Registration successful! Redirecting to login...
+      </div>
+    }
+
+    <form [formGroup]="registerForm" (ngSubmit)="onSubmit()" class="auth-form">
+      <div class="form-row">
+        <div class="form-group">
+          <label for="firstName">First Name</label>
+          <input 
+            id="firstName"
+            type="text" 
+            formControlName="firstName" 
+            class="form-control"
+            [class.invalid]="firstName?.invalid && firstName?.touched"
+            placeholder="First name"
+          />
+          @if (firstName?.invalid && firstName?.touched) {
+            <div class="error-message">First name is required</div>
+          }
+        </div>
+
+        <div class="form-group">
+          <label for="lastName">Last Name</label>
+          <input 
+            id="lastName"
+            type="text" 
+            formControlName="lastName" 
+            class="form-control"
+            [class.invalid]="lastName?.invalid && lastName?.touched"
+            placeholder="Last name"
+          />
+          @if (lastName?.invalid && lastName?.touched) {
+            <div class="error-message">Last name is required</div>
+          }
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="email">Email</label>
+        <input 
+          id="email"
+          type="email" 
+          formControlName="email" 
+          class="form-control"
+          [class.invalid]="email?.invalid && email?.touched"
+          placeholder="Enter your email"
+        />
+        @if (email?.invalid && email?.touched) {
+          <div class="error-message">
+            @if (email?.errors?.['required']) {
+              Email is required
+            }
+            @if (email?.errors?.['email']) {
+              Please enter a valid email
+            }
+          </div>
+        }
+      </div>
+
+      <div class="form-group">
+        <label for="userName">Username</label>
+        <input 
+          id="userName"
+          type="text" 
+          formControlName="userName" 
+          class="form-control"
+          [class.invalid]="userName?.invalid && userName?.touched"
+          placeholder="Choose a username"
+        />
+        @if (userName?.invalid && userName?.touched) {
+          <div class="error-message">
+            @if (userName?.errors?.['required']) {
+              Username is required
+            }
+            @if (userName?.errors?.['minlength']) {
+              Username must be at least 3 characters
+            }
+          </div>
+        }
+      </div>
+
+      <div class="form-group">
+        <label for="password">Password</label>
+        <input 
+          id="password"
+          type="password" 
+          formControlName="password" 
+          class="form-control"
+          [class.invalid]="password?.invalid && password?.touched"
+          placeholder="Create a password"
+        />
+        @if (password?.invalid && password?.touched) {
+          <div class="error-message">
+            @if (password?.errors?.['required']) {
+              Password is required
+            }
+            @if (password?.errors?.['minlength']) {
+              Password must be at least 6 characters
+            }
+          </div>
+        }
+      </div>
+
+      <div class="form-group">
+        <label for="confirmPassword">Confirm Password</label>
+        <input 
+          id="confirmPassword"
+          type="password" 
+          formControlName="confirmPassword" 
+          class="form-control"
+          [class.invalid]="confirmPassword?.invalid && confirmPassword?.touched || registerForm.errors?.['passwordMismatch']"
+          placeholder="Confirm your password"
+        />
+        @if (registerForm.errors?.['passwordMismatch'] && confirmPassword?.touched) {
+          <div class="error-message">Passwords do not match</div>
+        }
+      </div>
+
+      <button 
+        type="submit" 
+        class="btn btn-primary"
+        [disabled]="loading() || success()"
+      >
+        @if (loading()) {
+          <span>Creating account...</span>
+        } @else if (success()) {
+          <span>Success!</span>
+        } @else {
+          <span>Register</span>
+        }
+      </button>
+    </form>
+
+    <div class="auth-footer">
+      <p>Already have an account? <a routerLink="/auth/login">Login here</a></p>
+    </div>
+  </div>
+</div>
+
+@if (loading()) {
+  <app-loading-spinner [overlay]="true" message="Creating account..."></app-loading-spinner>
+}
