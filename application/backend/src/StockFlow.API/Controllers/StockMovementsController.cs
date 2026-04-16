@@ -1,9 +1,7 @@
-using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using Asp.Versioning;
 using StockFlow.Application.DTOs;
-using StockFlow.Application.StockMovements.Commands;
-using StockFlow.Application.StockMovements.Queries;
+using StockFlow.Application.Interfaces;
 
 namespace StockFlow.API.Controllers;
 
@@ -12,11 +10,11 @@ namespace StockFlow.API.Controllers;
 [Route("api/v{version:apiVersion}/[controller]")]
 public class StockMovementsController : ControllerBase
 {
-    private readonly IMediator _mediator;
+    private readonly IStockMovementService _stockMovementService;
 
-    public StockMovementsController(IMediator mediator)
+    public StockMovementsController(IStockMovementService stockMovementService)
     {
-        _mediator = mediator;
+        _stockMovementService = stockMovementService;
     }
 
     /// <summary>
@@ -26,7 +24,7 @@ public class StockMovementsController : ControllerBase
     [ProducesResponseType(typeof(IEnumerable<StockMovementDto>), StatusCodes.Status200OK)]
     public async Task<ActionResult<IEnumerable<StockMovementDto>>> GetAll()
     {
-        var movements = await _mediator.Send(new GetAllStockMovementsQuery());
+        var movements = await _stockMovementService.GetAllAsync();
         return Ok(movements);
     }
 
@@ -38,7 +36,7 @@ public class StockMovementsController : ControllerBase
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<ActionResult<StockMovementDto>> GetById(Guid id)
     {
-        var movement = await _mediator.Send(new GetStockMovementByIdQuery(id));
+        var movement = await _stockMovementService.GetByIdAsync(id);
         
         if (movement == null)
             return NotFound(new { message = $"Stock movement with ID {id} not found." });
@@ -54,7 +52,7 @@ public class StockMovementsController : ControllerBase
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<ActionResult<StockMovementDto>> Create([FromBody] CreateStockMovementDto createStockMovementDto)
     {
-        var movement = await _mediator.Send(new CreateStockMovementCommand(createStockMovementDto));
+        var movement = await _stockMovementService.CreateAsync(createStockMovementDto);
         return CreatedAtAction(nameof(GetById), new { id = movement.Id }, movement);
     }
 }

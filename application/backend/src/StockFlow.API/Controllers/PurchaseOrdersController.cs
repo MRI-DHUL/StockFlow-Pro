@@ -1,9 +1,7 @@
-using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using Asp.Versioning;
 using StockFlow.Application.DTOs;
-using StockFlow.Application.PurchaseOrders.Commands;
-using StockFlow.Application.PurchaseOrders.Queries;
+using StockFlow.Application.Interfaces;
 
 namespace StockFlow.API.Controllers;
 
@@ -12,11 +10,11 @@ namespace StockFlow.API.Controllers;
 [Route("api/v{version:apiVersion}/[controller]")]
 public class PurchaseOrdersController : ControllerBase
 {
-    private readonly IMediator _mediator;
+    private readonly IPurchaseOrderService _purchaseOrderService;
 
-    public PurchaseOrdersController(IMediator mediator)
+    public PurchaseOrdersController(IPurchaseOrderService purchaseOrderService)
     {
-        _mediator = mediator;
+        _purchaseOrderService = purchaseOrderService;
     }
 
     /// <summary>
@@ -26,7 +24,7 @@ public class PurchaseOrdersController : ControllerBase
     [ProducesResponseType(typeof(IEnumerable<PurchaseOrderDto>), StatusCodes.Status200OK)]
     public async Task<ActionResult<IEnumerable<PurchaseOrderDto>>> GetAll()
     {
-        var purchaseOrders = await _mediator.Send(new GetAllPurchaseOrdersQuery());
+        var purchaseOrders = await _purchaseOrderService.GetAllAsync();
         return Ok(purchaseOrders);
     }
 
@@ -38,7 +36,7 @@ public class PurchaseOrdersController : ControllerBase
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<ActionResult<PurchaseOrderDto>> GetById(Guid id)
     {
-        var purchaseOrder = await _mediator.Send(new GetPurchaseOrderByIdQuery(id));
+        var purchaseOrder = await _purchaseOrderService.GetByIdAsync(id);
         
         if (purchaseOrder == null)
             return NotFound(new { message = $"Purchase order with ID {id} not found." });
@@ -54,7 +52,7 @@ public class PurchaseOrdersController : ControllerBase
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<ActionResult<PurchaseOrderDto>> Create([FromBody] CreatePurchaseOrderDto createPurchaseOrderDto)
     {
-        var purchaseOrder = await _mediator.Send(new CreatePurchaseOrderCommand(createPurchaseOrderDto));
+        var purchaseOrder = await _purchaseOrderService.CreateAsync(createPurchaseOrderDto);
         return CreatedAtAction(nameof(GetById), new { id = purchaseOrder.Id }, purchaseOrder);
     }
 
@@ -66,7 +64,7 @@ public class PurchaseOrdersController : ControllerBase
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<ActionResult<PurchaseOrderDto>> Update(Guid id, [FromBody] UpdatePurchaseOrderDto updatePurchaseOrderDto)
     {
-        var purchaseOrder = await _mediator.Send(new UpdatePurchaseOrderCommand(id, updatePurchaseOrderDto));
+        var purchaseOrder = await _purchaseOrderService.UpdateAsync(id, updatePurchaseOrderDto);
         
         if (purchaseOrder == null)
             return NotFound(new { message = $"Purchase order with ID {id} not found." });

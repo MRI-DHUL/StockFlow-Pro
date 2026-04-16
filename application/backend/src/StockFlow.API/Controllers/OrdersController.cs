@@ -1,10 +1,8 @@
-using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Asp.Versioning;
 using StockFlow.Application.DTOs;
-using StockFlow.Application.Orders.Commands;
-using StockFlow.Application.Orders.Queries;
+using StockFlow.Application.Interfaces;
 
 namespace StockFlow.API.Controllers;
 
@@ -14,11 +12,11 @@ namespace StockFlow.API.Controllers;
 [Route("api/v{version:apiVersion}/[controller]")]
 public class OrdersController : ControllerBase
 {
-    private readonly IMediator _mediator;
+    private readonly IOrderService _orderService;
 
-    public OrdersController(IMediator mediator)
+    public OrdersController(IOrderService orderService)
     {
-        _mediator = mediator;
+        _orderService = orderService;
     }
 
     /// <summary>
@@ -28,7 +26,7 @@ public class OrdersController : ControllerBase
     [ProducesResponseType(typeof(PagedResult<OrderDto>), StatusCodes.Status200OK)]
     public async Task<ActionResult<PagedResult<OrderDto>>> GetPaged([FromQuery] OrderFilterParams filterParams)
     {
-        var orders = await _mediator.Send(new GetOrdersPagedQuery(filterParams));
+        var orders = await _orderService.GetPagedAsync(filterParams);
         return Ok(orders);
     }
 
@@ -39,7 +37,7 @@ public class OrdersController : ControllerBase
     [ProducesResponseType(typeof(IEnumerable<OrderDto>), StatusCodes.Status200OK)]
     public async Task<ActionResult<IEnumerable<OrderDto>>> GetAll()
     {
-        var orders = await _mediator.Send(new GetAllOrdersQuery());
+        var orders = await _orderService.GetAllAsync();
         return Ok(orders);
     }
 
@@ -51,7 +49,7 @@ public class OrdersController : ControllerBase
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<ActionResult<OrderDto>> GetById(Guid id)
     {
-        var order = await _mediator.Send(new GetOrderByIdQuery(id));
+        var order = await _orderService.GetByIdAsync(id);
         
         if (order == null)
             return NotFound(new { message = $"Order with ID {id} not found." });
@@ -67,7 +65,7 @@ public class OrdersController : ControllerBase
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<ActionResult<OrderDto>> Create([FromBody] CreateOrderDto createOrderDto)
     {
-        var order = await _mediator.Send(new CreateOrderCommand(createOrderDto));
+        var order = await _orderService.CreateAsync(createOrderDto);
         return CreatedAtAction(nameof(GetById), new { id = order.Id }, order);
     }
 
@@ -79,7 +77,7 @@ public class OrdersController : ControllerBase
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<ActionResult<OrderDto>> Update(Guid id, [FromBody] UpdateOrderDto updateOrderDto)
     {
-        var order = await _mediator.Send(new UpdateOrderCommand(id, updateOrderDto));
+        var order = await _orderService.UpdateAsync(id, updateOrderDto);
         
         if (order == null)
             return NotFound(new { message = $"Order with ID {id} not found." });

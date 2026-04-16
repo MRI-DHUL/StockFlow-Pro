@@ -1,9 +1,7 @@
-using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using Asp.Versioning;
 using StockFlow.Application.DTOs;
-using StockFlow.Application.Suppliers.Commands;
-using StockFlow.Application.Suppliers.Queries;
+using StockFlow.Application.Interfaces;
 
 namespace StockFlow.API.Controllers;
 
@@ -12,11 +10,11 @@ namespace StockFlow.API.Controllers;
 [Route("api/v{version:apiVersion}/[controller]")]
 public class SuppliersController : ControllerBase
 {
-    private readonly IMediator _mediator;
+    private readonly ISupplierService _supplierService;
 
-    public SuppliersController(IMediator mediator)
+    public SuppliersController(ISupplierService supplierService)
     {
-        _mediator = mediator;
+        _supplierService = supplierService;
     }
 
     /// <summary>
@@ -26,7 +24,7 @@ public class SuppliersController : ControllerBase
     [ProducesResponseType(typeof(IEnumerable<SupplierDto>), StatusCodes.Status200OK)]
     public async Task<ActionResult<IEnumerable<SupplierDto>>> GetAll()
     {
-        var suppliers = await _mediator.Send(new GetAllSuppliersQuery());
+        var suppliers = await _supplierService.GetAllAsync();
         return Ok(suppliers);
     }
 
@@ -38,7 +36,7 @@ public class SuppliersController : ControllerBase
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<ActionResult<SupplierDto>> GetById(Guid id)
     {
-        var supplier = await _mediator.Send(new GetSupplierByIdQuery(id));
+        var supplier = await _supplierService.GetByIdAsync(id);
         
         if (supplier == null)
             return NotFound(new { message = $"Supplier with ID {id} not found." });
@@ -54,7 +52,7 @@ public class SuppliersController : ControllerBase
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<ActionResult<SupplierDto>> Create([FromBody] CreateSupplierDto createSupplierDto)
     {
-        var supplier = await _mediator.Send(new CreateSupplierCommand(createSupplierDto));
+        var supplier = await _supplierService.CreateAsync(createSupplierDto);
         return CreatedAtAction(nameof(GetById), new { id = supplier.Id }, supplier);
     }
 
@@ -66,7 +64,7 @@ public class SuppliersController : ControllerBase
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<ActionResult<SupplierDto>> Update(Guid id, [FromBody] UpdateSupplierDto updateSupplierDto)
     {
-        var supplier = await _mediator.Send(new UpdateSupplierCommand(id, updateSupplierDto));
+        var supplier = await _supplierService.UpdateAsync(id, updateSupplierDto);
         
         if (supplier == null)
             return NotFound(new { message = $"Supplier with ID {id} not found." });
@@ -82,7 +80,7 @@ public class SuppliersController : ControllerBase
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> Delete(Guid id)
     {
-        var result = await _mediator.Send(new DeleteSupplierCommand(id));
+        var result = await _supplierService.DeleteAsync(id);
         
         if (!result)
             return NotFound(new { message = $"Supplier with ID {id} not found." });

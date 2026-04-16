@@ -1,9 +1,8 @@
-using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Asp.Versioning;
 using StockFlow.Application.DTOs;
-using StockFlow.Application.AuditLogs.Queries;
+using StockFlow.Application.Interfaces;
 
 namespace StockFlow.API.Controllers;
 
@@ -13,11 +12,11 @@ namespace StockFlow.API.Controllers;
 [Route("api/v{version:apiVersion}/[controller]")]
 public class AuditLogsController : ControllerBase
 {
-    private readonly IMediator _mediator;
+    private readonly IAuditLogService _auditLogService;
 
-    public AuditLogsController(IMediator mediator)
+    public AuditLogsController(IAuditLogService auditLogService)
     {
-        _mediator = mediator;
+        _auditLogService = auditLogService;
     }
 
     /// <summary>
@@ -27,7 +26,7 @@ public class AuditLogsController : ControllerBase
     [ProducesResponseType(typeof(PagedResult<AuditLogDto>), StatusCodes.Status200OK)]
     public async Task<ActionResult<PagedResult<AuditLogDto>>> GetPaged([FromQuery] AuditLogFilterParams filterParams)
     {
-        var auditLogs = await _mediator.Send(new GetAuditLogsPagedQuery(filterParams));
+        var auditLogs = await _auditLogService.GetPagedAsync(filterParams);
         return Ok(auditLogs);
     }
 
@@ -39,7 +38,7 @@ public class AuditLogsController : ControllerBase
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<ActionResult<AuditLogDto>> GetById(Guid id)
     {
-        var auditLog = await _mediator.Send(new GetAuditLogByIdQuery(id));
+        var auditLog = await _auditLogService.GetByIdAsync(id);
         
         if (auditLog == null)
             return NotFound();

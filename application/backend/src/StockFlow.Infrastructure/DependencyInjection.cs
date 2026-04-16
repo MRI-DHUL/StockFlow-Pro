@@ -79,6 +79,8 @@ public static class DependencyInjection
         services.AddScoped<ITokenService, TokenService>();
         services.AddScoped<ICacheService, RedisCacheService>();
         services.AddScoped<IBackgroundJobService, HangfireJobService>();
+        services.AddScoped<IEmailService, GmailService>();
+        services.AddScoped<INotificationService, PusherNotificationService>();
 
         // Configure Redis Distributed Cache
         var redisConnection = configuration.GetConnectionString("Redis");

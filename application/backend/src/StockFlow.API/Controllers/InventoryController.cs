@@ -1,10 +1,8 @@
-using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Asp.Versioning;
 using StockFlow.Application.DTOs;
-using StockFlow.Application.Inventory.Commands;
-using StockFlow.Application.Inventory.Queries;
+using StockFlow.Application.Interfaces;
 
 namespace StockFlow.API.Controllers;
 
@@ -14,11 +12,11 @@ namespace StockFlow.API.Controllers;
 [Route("api/v{version:apiVersion}/[controller]")]
 public class InventoryController : ControllerBase
 {
-    private readonly IMediator _mediator;
+    private readonly IInventoryService _inventoryService;
 
-    public InventoryController(IMediator mediator)
+    public InventoryController(IInventoryService inventoryService)
     {
-        _mediator = mediator;
+        _inventoryService = inventoryService;
     }
 
     /// <summary>
@@ -28,7 +26,7 @@ public class InventoryController : ControllerBase
     [ProducesResponseType(typeof(PagedResult<InventoryDto>), StatusCodes.Status200OK)]
     public async Task<ActionResult<PagedResult<InventoryDto>>> GetPaged([FromQuery] InventoryFilterParams filterParams)
     {
-        var inventory = await _mediator.Send(new GetInventoryPagedQuery(filterParams));
+        var inventory = await _inventoryService.GetPagedAsync(filterParams);
         return Ok(inventory);
     }
 
@@ -39,7 +37,7 @@ public class InventoryController : ControllerBase
     [ProducesResponseType(typeof(IEnumerable<InventoryDto>), StatusCodes.Status200OK)]
     public async Task<ActionResult<IEnumerable<InventoryDto>>> GetAll()
     {
-        var inventory = await _mediator.Send(new GetAllInventoryQuery());
+        var inventory = await _inventoryService.GetAllAsync();
         return Ok(inventory);
     }
 
@@ -50,7 +48,7 @@ public class InventoryController : ControllerBase
     [ProducesResponseType(typeof(IEnumerable<InventoryDto>), StatusCodes.Status200OK)]
     public async Task<ActionResult<IEnumerable<InventoryDto>>> GetLowStock()
     {
-        var lowStockItems = await _mediator.Send(new GetLowStockItemsQuery());
+        var lowStockItems = await _inventoryService.GetLowStockItemsAsync();
         return Ok(lowStockItems);
     }
 
@@ -62,7 +60,7 @@ public class InventoryController : ControllerBase
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<ActionResult<InventoryDto>> Create([FromBody] CreateInventoryDto createInventoryDto)
     {
-        var inventory = await _mediator.Send(new CreateInventoryCommand(createInventoryDto));
+        var inventory = await _inventoryService.CreateAsync(createInventoryDto);
         return CreatedAtAction(nameof(GetAll), new { id = inventory.Id }, inventory);
     }
 
@@ -74,7 +72,7 @@ public class InventoryController : ControllerBase
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<ActionResult<InventoryDto>> Update(Guid id, [FromBody] UpdateInventoryDto updateInventoryDto)
     {
-        var inventory = await _mediator.Send(new UpdateInventoryCommand(id, updateInventoryDto));
+        var inventory = await _inventoryService.UpdateAsync(id, updateInventoryDto);
         
         if (inventory == null)
             return NotFound(new { message = $"Inventory with ID {id} not found." });

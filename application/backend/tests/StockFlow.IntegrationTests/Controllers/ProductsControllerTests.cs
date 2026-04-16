@@ -1,7 +1,7 @@
 using System.Net;
 using System.Net.Http.Json;
 using FluentAssertions;
-using StockFlow.Application.DTOs.Products;
+using StockFlow.Application.DTOs;
 using Xunit;
 
 namespace StockFlow.IntegrationTests.Controllers;

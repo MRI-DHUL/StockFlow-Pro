@@ -2,24 +2,26 @@
 
 **Enterprise-Grade Inventory and Stock Management System**
 
-Built with ASP.NET Core 8.0 | Clean Architecture | CQRS Pattern | Azure SQL Database
+Built with ASP.NET Core 8.0 | Clean Architecture | 3-Tier Pattern | Azure SQL Database
 
 ---
 
 ## 📌 Overview
 
-StockFlow Pro Backend is a production-ready, enterprise-grade RESTful API for comprehensive inventory and stock management. Built using Clean Architecture principles with CQRS pattern, it provides robust features including real-time inventory tracking, order management, supplier coordination, audit trails, and intelligent background processing.
+StockFlow Pro Backend is a production-ready, enterprise-grade RESTful API for comprehensive inventory and stock management. Built using Clean Architecture principles with a traditional 3-tier architecture (Controller → Service → Repository), it provides robust features including real-time inventory tracking, order management, supplier coordination, audit trails, and intelligent background processing.
 
 **Key Highlights:**
 - ✅ 45 RESTful API endpoints across 9 controllers
 - ✅ Clean Architecture with 4 distinct layers
-- ✅ CQRS pattern with MediatR for command/query separation
+- ✅ 3-Tier Pattern with dedicated Service Layer for business logic
 - ✅ Azure SQL Database with Entity Framework Core
 - ✅ Redis Cloud distributed caching
 - ✅ JWT-based authentication with role-based authorization
 - ✅ Comprehensive audit trail and soft delete support
 - ✅ Rate limiting with multiple policies
 - ✅ Automated background jobs with Hangfire
+- ✅ Gmail email notifications (MailKit SMTP)
+- ✅ Pusher real-time WebSocket notifications
 - ✅ Health checks and monitoring
 - ✅ Structured logging with Serilog
 - ✅ API versioning support
@@ -41,19 +43,21 @@ StockFlow Pro Backend is a production-ready, enterprise-grade RESTful API for co
     │   └── Program.cs                    (Application startup & configuration)
     │
     ├── 📁 StockFlow.Application/      → Application Layer
-    │   ├── Products/                     (Commands & Queries)
-    │   ├── Inventory/                    (CQRS handlers)
-    │   ├── Orders/                       (Business logic)
-    │   ├── Warehouses/
-    │   ├── Suppliers/
-    │   ├── PurchaseOrders/
-    │   ├── StockMovements/
-    │   ├── AuditLogs/
+    │   ├── Services/                     (10 Service implementations)
+    │   │   ├── ProductService.cs
+    │   │   ├── OrderService.cs
+    │   │   ├── InventoryService.cs
+    │   │   ├── SupplierService.cs
+    │   │   ├── WarehouseService.cs
+    │   │   ├── StockMovementService.cs
+    │   │   ├── PurchaseOrderService.cs
+    │   │   ├── AuditLogService.cs
+    │   │   ├── GmailService.cs (Email notifications)
+    │   │   └── PusherNotificationService.cs (Real-time)
     │   ├── DTOs/                         (33 Data Transfer Objects)
     │   ├── Validators/                   (15 FluentValidation validators)
-    │   ├── Interfaces/                   (Contracts)
-    │   ├── Mappings/                     (Mapster configurations)
-    │   └── Behaviors/                    (MediatR pipeline behaviors)
+    │   ├── Interfaces/                   (Service interfaces & Repository contracts)
+    │   └── Mappings/                     (Mapster configurations)
     │
     ├── 📁 StockFlow.Domain/           → Domain Layer
     │   ├── Entities/                     (12 domain entities)
@@ -92,14 +96,26 @@ StockFlow Pro Backend is a production-ready, enterprise-grade RESTful API for co
 - **Dependency Inversion** - Depend on abstractions, not concretions
 
 #### Design Patterns Implemented
+- **3-Tier Architecture** - Clear separation: Controller → Service → Repository
 - **Repository Pattern** - Generic repository with specialized implementations
 - **Unit of Work** - Transaction management across repositories
-- **CQRS** - Separate commands (writes) and queries (reads)
-- **Mediator Pattern** - MediatR for decoupled request handling
+- **Service Layer Pattern** - Encapsulates business logic and validation
 - **Factory Pattern** - Entity creation and initialization
 - **Strategy Pattern** - Multiple rate limiting strategies
-- **Chain of Responsibility** - MediatR pipeline behaviors
 - **Dependency Injection** - All dependencies injected via ASP.NET Core DI
+
+#### Architecture Flow
+```
+Client Request
+    ↓
+Controller (API Layer)
+    ↓
+Service (Business Logic + Validation)
+    ↓
+Repository (Data Access)
+    ↓
+Database (Azure SQL)
+```
 
 ---
 
@@ -137,10 +153,23 @@ StockFlow Pro Backend is a production-ready, enterprise-grade RESTful API for co
 | **Rate Limiting** | Built-in | API abuse prevention |
 
 ### CQRS & Messaging
-| Technology | Version | Purpose |
-|------------|---------|---------|
-| **MediatR** | 12.2.0 | CQRS implementation, request/response pipeline |
-| **MediatR.Extensions.Microsoft.DependencyInjection** | 11.1.0 | DI integration |
+
+### Service Layer Architecture
+| Component | Count | Purpose |
+|-----------|-------|---------|
+| **Service Interfaces** | 8 | Define contracts for business operations |
+| **Service Implementations** | 8 | Encapsulate business logic, validation, and data access |
+| **Direct Validation** | Yes | FluentValidation called directly in services |
+
+**Services Implemented:**
+- ✅ `ProductService` - Product CRUD, caching, pagination
+- ✅ `OrderService` - Order management, calculations
+- ✅ `InventoryService` - Stock tracking, low stock alerts
+- ✅ `SupplierService` - Supplier management
+- ✅ `WarehouseService` - Warehouse operations
+- ✅ `StockMovementService` - Inventory movements, transfers
+- ✅ `PurchaseOrderService` - PO management
+- ✅ `AuditLogService` - Audit log queries
 
 ### Mapping & Validation
 | Technology | Version | Purpose | Why Chosen |
@@ -148,6 +177,24 @@ StockFlow Pro Backend is a production-ready, enterprise-grade RESTful API for co
 | **Mapster** | 7.4.0 | Object-to-object mapping | 10x faster than AutoMapper |
 | **FluentValidation** | 11.9.1 | Request validation | Fluent API, testable, maintainable |
 | **FluentValidation.DependencyInjectionExtensions** | 11.9.1 | DI integration | Automatic validator discovery |
+
+### Email & Notifications
+| Technology | Version | Purpose | Why Chosen |
+|------------|---------|---------|------------|
+| **MailKit** | 4.5.0 | Gmail SMTP email service | Industry-standard, reliable, secure |
+| **PusherServer** | 5.0.0 | Real-time WebSocket notifications | Low latency, scalable, easy integration |
+
+**Email Features:**
+- ✅ Low stock alerts to admin team
+- ✅ Order confirmation emails to customers
+- ✅ HTML-formatted professional templates
+- ✅ Multi-recipient support
+
+**Real-Time Notifications:**
+- ✅ Live dashboard updates via WebSockets
+- ✅ Instant low stock alerts
+- ✅ Order placement notifications
+- ✅ Inventory level change events
 
 ### Background Jobs & Scheduling
 | Technology | Version | Purpose |
@@ -157,7 +204,7 @@ StockFlow Pro Backend is a production-ready, enterprise-grade RESTful API for co
 | **Dashboard** | `/hangfire` | Web-based job monitoring |
 
 **Configured Jobs:**
-- ✅ **Low Stock Check** - Daily at 9:00 AM (checks inventory thresholds)
+- ✅ **Low Stock Check** - Daily at 9:00 AM (checks inventory thresholds, sends emails & Pusher alerts)
 - ✅ **Token Cleanup** - Daily at 2:00 AM (removes expired refresh tokens)
 
 ### Logging & Monitoring
@@ -459,11 +506,12 @@ var allProducts = _context.Products.IgnoreQueryFilters().ToList();
 - FirstName: Required, max 100 characters
 - LastName: Required, max 100 characters
 
-#### Validation Pipeline
-- ✅ Automatic validation via MediatR pipeline behavior
-- ✅ Validation executed before command/query handlers
+#### Validation Approach
+- ✅ Direct validation in service layer using FluentValidation
+- ✅ `ValidateAndThrowAsync()` called before business logic execution
 - ✅ 400 Bad Request response on validation failure
 - ✅ Detailed error messages per property
+- ✅ Centralized validation logic with reusable validators
 
 **Error Response Format:**
 ```json
@@ -893,7 +941,7 @@ Role: Admin
 
 | Project | Tests | Status | Purpose |
 |---------|-------|--------|---------|
-| **StockFlow.UnitTests** | 20 tests | ✅ All Passing | CQRS handlers, validators, domain entities |
+| **StockFlow.UnitTests** | 20 tests | ✅ All Passing | Services, validators, domain entities |
 | **StockFlow.IntegrationTests** | 18+ tests | ✅ Ready | API endpoints, authentication, health checks |
 | **Manual Tests** | 100+ requests | ✅ Ready | REST Client .http file for manual testing |
 
@@ -991,7 +1039,6 @@ curl -X POST "http://localhost:5057/api/v1/products" \
 <PackageReference Include="AspNetCore.HealthChecks.UI.Client" Version="8.0.0" />
 
 <!-- Application Layer -->
-<PackageReference Include="MediatR" Version="12.2.0" />
 <PackageReference Include="Mapster" Version="7.4.0" />
 <PackageReference Include="FluentValidation" Version="11.9.1" />
 <PackageReference Include="FluentValidation.DependencyInjectionExtensions" Version="11.9.1" />
@@ -1302,7 +1349,7 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 **StockFlow Pro Development Team**
 - Architecture & Backend Development
 - Clean Architecture Implementation
-- CQRS Pattern with MediatR
+- 3-Tier Pattern with Service Layer
 - Enterprise Features Integration
 
 ---
@@ -1310,7 +1357,6 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 ## 🙏 Acknowledgments
 
 - ASP.NET Core Team for excellent documentation
-- MediatR library for CQRS implementation
 - Mapster team for high-performance mapping
 - Hangfire for background job processing
 - Serilog for structured logging
@@ -1405,31 +1451,120 @@ Id (UUID), ProductId (FK), FromWarehouseId (FK), ToWarehouseId (FK), Quantity, T
 
 ---
 
-## 🔗 Event-Driven Architecture
+## 🔗 Real-Time Notifications & Email System
 
-### Domain Events (RabbitMQ)
+### Email Notifications (Gmail SMTP)
 
-#### Published Events
-* `OrderPlacedEvent` - When order is created
-* `StockUpdatedEvent` - When inventory changes
-* `LowStockDetectedEvent` - When stock falls below threshold
-* `StockTransferInitiatedEvent` - When transfer starts
-* `SupplierOrderCreatedEvent` - When purchase order is created
+**Implementation**: Gmail service using MailKit for reliable email delivery
 
-#### Event Handlers
-* **OrderPlacedHandler** - Deducts inventory, updates stock
-* **StockUpdatedHandler** - Triggers prediction recalculation
-* **LowStockHandler** - Creates notification, triggers Pusher alert
+#### Email Service Features
+* ✅ **Low Stock Alerts** - Automated emails when inventory falls below threshold
+* ✅ **Order Confirmations** - Customer email confirmation on order placement
+* ✅ **Custom Email Templates** - HTML-formatted professional emails
+* ✅ **Multi-Recipient Support** - Send to admin teams and customers
+* ✅ **Structured Logging** - All email activities logged via Serilog
 
-### Event Flow Example
+#### Email Types
+| Email Type | Trigger | Recipients | Purpose |
+|------------|---------|-----------|----------|
+| **Low Stock Alert** | Inventory < Threshold | Admin Team | Reorder notification |
+| **Order Confirmation** | Order Created | Customer | Order receipt |
+| **Custom Notifications** | API Call | Configurable | General notifications |
+
+**Configuration** (appsettings.json):
+```json
+{
+  "GmailSettings": {
+    "SmtpServer": "smtp.gmail.com",
+    "SmtpPort": "587",
+    "SenderEmail": "stockflowpro@gmail.com",
+    "SenderName": "StockFlow Pro",
+    "SenderPassword": "your-gmail-app-password",
+    "AdminEmails": ["admin@stockflowpro.com"]
+  }
+}
 ```
-1. Order Created → OrderPlacedEvent published to RabbitMQ
-2. OrderPlacedHandler consumes event → Updates inventory
-3. Inventory updated → StockUpdatedEvent published
-4. StockUpdatedHandler checks threshold
-5. If low → LowStockDetectedEvent published
-6. LowStockHandler triggers Pusher notification
-7. Frontend receives real-time alert
+
+### Live Notifications (Pusher)
+
+**Implementation**: PusherServer SDK for real-time WebSocket notifications
+
+#### Pusher Service Features
+* ✅ **Real-Time Alerts** - Instant browser notifications via WebSockets
+* ✅ **Low Stock Notifications** - Live alerts when stock is low
+* ✅ **Order Placed Events** - Real-time order tracking
+* ✅ **Stock Update Events** - Live inventory level changes
+* ✅ **Multi-Channel Support** - Broadcast to specific channels
+* ✅ **Encrypted Connections** - Secure WebSocket communication
+
+#### Pusher Events
+| Event Name | Channel | Data | Purpose |
+|------------|---------|------|----------|
+| **low-stock-detected** | stockflow-notifications | Product, Quantity, Threshold | Alert dashboard |
+| **order-placed** | stockflow-notifications | OrderId, Customer, Amount | Live order feed |
+| **stock-updated** | stockflow-notifications | Product, Old/New Quantity | Inventory changes |
+| **custom-notification** | Configurable | Custom Data | General events |
+
+**Configuration** (appsettings.json):
+```json
+{
+  "PusherSettings": {
+    "AppId": "your-pusher-app-id",
+    "Key": "your-pusher-key",
+    "Secret": "your-pusher-secret",
+    "Cluster": "us2",
+    "DefaultChannel": "stockflow-notifications"
+  }
+}
+```
+
+### Notification Flow
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│  1. Business Event (e.g., Low Stock Detected)              │
+└────────────────────┬────────────────────────────────────────┘
+                     │
+         ┌───────────┴───────────┐
+         │                       │
+         ▼                       ▼
+┌─────────────────┐    ┌──────────────────┐
+│  Email Service  │    │  Pusher Service  │
+│   (Gmail SMTP)  │    │   (WebSockets)   │
+└────────┬────────┘    └────────┬─────────┘
+         │                       │
+         ▼                       ▼
+┌─────────────────┐    ┌──────────────────┐
+│  Admin Inbox    │    │ Live Dashboard   │
+│  Customer Email │    │ Browser Alert    │
+└─────────────────┘    └──────────────────┘
+```
+
+### Service Usage Example
+
+**In Background Jobs or Services:**
+```csharp
+public class InventoryJobs
+{
+    private readonly IEmailService _emailService;
+    private readonly INotificationService _notificationService;
+    
+    public async Task CheckLowStockLevels()
+    {
+        var lowStockItems = await GetLowStockItems();
+        
+        foreach (var item in lowStockItems)
+        {
+            // Send email notification
+            await _emailService.SendLowStockAlertAsync(
+                item.ProductName, item.SKU, item.Quantity, item.Threshold);
+            
+            // Send real-time Pusher notification
+            await _notificationService.SendLowStockNotificationAsync(
+                item.ProductName, item.SKU, item.Quantity, item.Threshold);
+        }
+    }
+}
 ```
 
 ---
@@ -1704,8 +1839,9 @@ dotnet test /p:CollectCoverage=true
 
 * [ASP.NET Core Documentation](https://docs.microsoft.com/aspnet/core)
 * [Entity Framework Core](https://docs.microsoft.com/ef/core)
-* [MediatR](https://github.com/jbogard/MediatR)
 * [Clean Architecture](https://blog.cleancoder.com/uncle-bob/2012/08/13/the-clean-architecture.html)
+* [Hangfire Documentation](https://www.hangfire.io/)
+* [FluentValidation](https://docs.fluentvalidation.net/)
 
 ---
 

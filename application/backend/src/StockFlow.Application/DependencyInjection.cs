@@ -1,10 +1,9 @@
 using FluentValidation;
 using Mapster;
 using MapsterMapper;
-using MediatR;
 using Microsoft.Extensions.DependencyInjection;
-using StockFlow.Application.Behaviors;
-using StockFlow.Application.Mappings;
+using StockFlow.Application.Interfaces;
+using StockFlow.Application.Services;
 using System.Reflection;
 
 namespace StockFlow.Application;
@@ -13,14 +12,15 @@ public static class DependencyInjection
 {
     public static IServiceCollection AddApplication(this IServiceCollection services)
     {
-        // Add MediatR with Pipeline Behaviors
-        services.AddMediatR(cfg =>
-        {
-            cfg.RegisterServicesFromAssembly(Assembly.GetExecutingAssembly());
-        });
-
-        // Add validation behavior to MediatR pipeline
-        services.AddTransient(typeof(IPipelineBehavior<,>), typeof(ValidationBehavior<,>));
+        // Register Services (3-tier architecture)
+        services.AddScoped<IProductService, ProductService>();
+        services.AddScoped<IOrderService, OrderService>();
+        services.AddScoped<IInventoryService, InventoryService>();
+        services.AddScoped<ISupplierService, SupplierService>();
+        services.AddScoped<IWarehouseService, WarehouseService>();
+        services.AddScoped<IStockMovementService, StockMovementService>();
+        services.AddScoped<IPurchaseOrderService, PurchaseOrderService>();
+        services.AddScoped<IAuditLogService, AuditLogService>();
 
         // Add Mapster
         var config = TypeAdapterConfig.GlobalSettings;

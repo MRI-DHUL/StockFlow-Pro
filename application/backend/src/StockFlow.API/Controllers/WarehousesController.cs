@@ -1,9 +1,7 @@
-using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using Asp.Versioning;
 using StockFlow.Application.DTOs;
-using StockFlow.Application.Warehouse.Commands;
-using StockFlow.Application.Warehouse.Queries;
+using StockFlow.Application.Interfaces;
 
 namespace StockFlow.API.Controllers;
 
@@ -12,11 +10,11 @@ namespace StockFlow.API.Controllers;
 [Route("api/v{version:apiVersion}/[controller]")]
 public class WarehousesController : ControllerBase
 {
-    private readonly IMediator _mediator;
+    private readonly IWarehouseService _warehouseService;
 
-    public WarehousesController(IMediator mediator)
+    public WarehousesController(IWarehouseService warehouseService)
     {
-        _mediator = mediator;
+        _warehouseService = warehouseService;
     }
 
     /// <summary>
@@ -26,7 +24,7 @@ public class WarehousesController : ControllerBase
     [ProducesResponseType(typeof(IEnumerable<WarehouseDto>), StatusCodes.Status200OK)]
     public async Task<ActionResult<IEnumerable<WarehouseDto>>> GetAll()
     {
-        var warehouses = await _mediator.Send(new GetAllWarehousesQuery());
+        var warehouses = await _warehouseService.GetAllAsync();
         return Ok(warehouses);
     }
 
@@ -38,7 +36,7 @@ public class WarehousesController : ControllerBase
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<ActionResult<WarehouseDto>> GetById(Guid id)
     {
-        var warehouse = await _mediator.Send(new GetWarehouseByIdQuery(id));
+        var warehouse = await _warehouseService.GetByIdAsync(id);
         
         if (warehouse == null)
             return NotFound(new { message = $"Warehouse with ID {id} not found." });
@@ -54,7 +52,7 @@ public class WarehousesController : ControllerBase
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<ActionResult<WarehouseDto>> Create([FromBody] CreateWarehouseDto createWarehouseDto)
     {
-        var warehouse = await _mediator.Send(new CreateWarehouseCommand(createWarehouseDto));
+        var warehouse = await _warehouseService.CreateAsync(createWarehouseDto);
         return CreatedAtAction(nameof(GetById), new { id = warehouse.Id }, warehouse);
     }
 
@@ -66,7 +64,7 @@ public class WarehousesController : ControllerBase
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<ActionResult<WarehouseDto>> Update(Guid id, [FromBody] UpdateWarehouseDto updateWarehouseDto)
     {
-        var warehouse = await _mediator.Send(new UpdateWarehouseCommand(id, updateWarehouseDto));
+        var warehouse = await _warehouseService.UpdateAsync(id, updateWarehouseDto);
         
         if (warehouse == null)
             return NotFound(new { message = $"Warehouse with ID {id} not found." });
@@ -82,7 +80,7 @@ public class WarehousesController : ControllerBase
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> Delete(Guid id)
     {
-        var result = await _mediator.Send(new DeleteWarehouseCommand(id));
+        var result = await _warehouseService.DeleteAsync(id);
         
         if (!result)
             return NotFound(new { message = $"Warehouse with ID {id} not found." });

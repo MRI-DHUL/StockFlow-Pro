@@ -1,10 +1,8 @@
-using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Asp.Versioning;
 using StockFlow.Application.DTOs;
-using StockFlow.Application.Products.Commands;
-using StockFlow.Application.Products.Queries;
+using StockFlow.Application.Interfaces;
 
 namespace StockFlow.API.Controllers;
 
@@ -14,11 +12,11 @@ namespace StockFlow.API.Controllers;
 [Route("api/v{version:apiVersion}/[controller]")]
 public class ProductsController : ControllerBase
 {
-    private readonly IMediator _mediator;
+    private readonly IProductService _productService;
 
-    public ProductsController(IMediator mediator)
+    public ProductsController(IProductService productService)
     {
-        _mediator = mediator;
+        _productService = productService;
     }
 
     /// <summary>
@@ -28,7 +26,7 @@ public class ProductsController : ControllerBase
     [ProducesResponseType(typeof(PagedResult<ProductDto>), StatusCodes.Status200OK)]
     public async Task<ActionResult<PagedResult<ProductDto>>> GetPaged([FromQuery] ProductFilterParams filterParams)
     {
-        var products = await _mediator.Send(new GetProductsPagedQuery(filterParams));
+        var products = await _productService.GetPagedAsync(filterParams);
         return Ok(products);
     }
 
@@ -39,7 +37,7 @@ public class ProductsController : ControllerBase
     [ProducesResponseType(typeof(IEnumerable<ProductDto>), StatusCodes.Status200OK)]
     public async Task<ActionResult<IEnumerable<ProductDto>>> GetAll()
     {
-        var products = await _mediator.Send(new GetAllProductsQuery());
+        var products = await _productService.GetAllAsync();
         return Ok(products);
     }
 
@@ -51,7 +49,7 @@ public class ProductsController : ControllerBase
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<ActionResult<ProductDto>> GetById(Guid id)
     {
-        var product = await _mediator.Send(new GetProductByIdQuery(id));
+        var product = await _productService.GetByIdAsync(id);
         
         if (product == null)
             return NotFound(new { message = $"Product with ID {id} not found." });
@@ -67,7 +65,7 @@ public class ProductsController : ControllerBase
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<ActionResult<ProductDto>> Create([FromBody] CreateProductDto createProductDto)
     {
-        var product = await _mediator.Send(new CreateProductCommand(createProductDto));
+        var product = await _productService.CreateAsync(createProductDto);
         return CreatedAtAction(nameof(GetById), new { id = product.Id }, product);
     }
 
@@ -79,7 +77,7 @@ public class ProductsController : ControllerBase
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<ActionResult<ProductDto>> Update(Guid id, [FromBody] UpdateProductDto updateProductDto)
     {
-        var product = await _mediator.Send(new UpdateProductCommand(id, updateProductDto));
+        var product = await _productService.UpdateAsync(id, updateProductDto);
         
         if (product == null)
             return NotFound(new { message = $"Product with ID {id} not found." });
@@ -95,7 +93,7 @@ public class ProductsController : ControllerBase
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> Delete(Guid id)
     {
-        var success = await _mediator.Send(new DeleteProductCommand(id));
+        var success = await _productService.DeleteAsync(id);
         
         if (!success)
             return NotFound(new { message = $"Product with ID {id} not found." });

@@ -1,7 +1,7 @@
 using System.Net;
 using System.Net.Http.Json;
 using FluentAssertions;
-using StockFlow.Application.DTOs.Auth;
+using StockFlow.Application.DTOs;
 using Xunit;
 
 namespace StockFlow.IntegrationTests.Controllers;
@@ -104,7 +104,7 @@ public class AuthControllerTests : IClassFixture<CustomWebApplicationFactory>
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.OK);
         authResponse.Should().NotBeNull();
-        authResponse!.AccessToken.Should().NotBeNullOrEmpty();
+        authResponse!.Token.Should().NotBeNullOrEmpty();
         authResponse.RefreshToken.Should().NotBeNullOrEmpty();
     }
 
