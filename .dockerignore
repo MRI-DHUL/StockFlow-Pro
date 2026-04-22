@@ -1,4 +1,0 @@
-# Absolute minimal .dockerignore
-.git
-.github
-application/frontend
