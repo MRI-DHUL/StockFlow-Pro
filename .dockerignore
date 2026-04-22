@@ -1,15 +1,4 @@
-# Minimal .dockerignore - only exclude what's not needed for Docker build
-
-# Git
-.git/
-.github/
-
-# Frontend (backend Docker doesn't need it)
-application/frontend/
-
-# Build outputs will be regenerated
-**/bin/
-**/obj/
-**/publish/
-**/out/
-**/Logs/
+# Absolute minimal .dockerignore
+.git
+.github
+application/frontend
