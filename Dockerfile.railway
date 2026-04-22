@@ -48,4 +48,4 @@ EXPOSE 8080
 
 # Run the application
 # Railway will set PORT env variable, ASP.NET Core will bind to it via ASPNETCORE_URLS
-CMD ASPNETCORE_URLS=http://*:$PORT dotnet StockFlow.API.dll
+CMD ["dotnet", "StockFlow.API.dll"]
