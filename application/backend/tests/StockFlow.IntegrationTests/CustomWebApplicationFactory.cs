@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using Microsoft.Extensions.Configuration;
 using StockFlow.Infrastructure.Persistence;
 
 namespace StockFlow.IntegrationTests;
@@ -11,6 +12,12 @@ public class CustomWebApplicationFactory : WebApplicationFactory<Program>
 {
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
+        builder.ConfigureAppConfiguration((context, config) =>
+        {
+            // Use Test environment configuration
+            config.AddJsonFile("appsettings.Test.json", optional: true);
+        });
+
         builder.ConfigureServices(services =>
         {
             // Remove the existing DbContext registration
