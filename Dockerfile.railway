@@ -2,26 +2,27 @@
 FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
 WORKDIR /src
 
-# Copy solution and project files
-COPY ["application/backend/StockFlow.sln", "./"]
-COPY ["application/backend/src/StockFlow.API/StockFlow.API.csproj", "src/StockFlow.API/"]
-COPY ["application/backend/src/StockFlow.Application/StockFlow.Application.csproj", "src/StockFlow.Application/"]
-COPY ["application/backend/src/StockFlow.Domain/StockFlow.Domain.csproj", "src/StockFlow.Domain/"]
-COPY ["application/backend/src/StockFlow.Infrastructure/StockFlow.Infrastructure.csproj", "src/StockFlow.Infrastructure/"]
+# Copy solution and all project files
+COPY application/backend/StockFlow.sln ./
+COPY application/backend/src/StockFlow.API/StockFlow.API.csproj ./src/StockFlow.API/
+COPY application/backend/src/StockFlow.Application/StockFlow.Application.csproj ./src/StockFlow.Application/
+COPY application/backend/src/StockFlow.Domain/StockFlow.Domain.csproj ./src/StockFlow.Domain/
+COPY application/backend/src/StockFlow.Infrastructure/StockFlow.Infrastructure.csproj ./src/StockFlow.Infrastructure/
 
 # Restore dependencies
-RUN dotnet restore "src/StockFlow.API/StockFlow.API.csproj"
+RUN dotnet restore
 
-# Copy source code
-COPY application/backend/ ./
+# Copy all source code
+COPY application/backend/src ./src
 
 # Build the application
-WORKDIR "/src/src/StockFlow.API"
-RUN dotnet build "StockFlow.API.csproj" -c Release -o /app/build
+WORKDIR /src/src/StockFlow.API
+RUN dotnet build StockFlow.API.csproj -c Release -o /app/build
 
 # Publish Stage
 FROM build AS publish
-RUN dotnet publish "StockFlow.API.csproj" -c Release -o /app/publish /p:UseAppHost=false
+WORKDIR /src/src/StockFlow.API
+RUN dotnet publish StockFlow.API.csproj -c Release -o /app/publish /p:UseAppHost=false
 
 # Runtime Stage
 FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS final

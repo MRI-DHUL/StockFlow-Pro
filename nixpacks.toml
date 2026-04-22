@@ -1,15 +1,14 @@
 [phases.setup]
-nixPkgs = ["...", "curl"]
+nixPkgs = ["dotnet-sdk_8"]
 
 [phases.build]
 cmds = [
-  "cd application/backend",
-  "dotnet restore",
-  "dotnet publish src/StockFlow.API/StockFlow.API.csproj -c Release -o /app/publish"
+  "dotnet restore application/backend/StockFlow.sln",
+  "dotnet publish application/backend/src/StockFlow.API/StockFlow.API.csproj -c Release -o out"
 ]
 
 [phases.start]
-cmd = "cd /app/publish && dotnet StockFlow.API.dll"
+cmd = "dotnet out/StockFlow.API.dll"
 
 [variables]
 ASPNETCORE_ENVIRONMENT = "Production"
