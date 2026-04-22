@@ -1,0 +1,36 @@
+# Railway Ignore - Reduce build size and time
+
+# Frontend (not needed for backend deployment)
+application/frontend/
+
+# Documentation
+*.md
+!README.md
+LICENSE
+
+# Deployment scripts
+deploy-azure.ps1
+deploy-azure.sh
+.github/
+
+# Git
+.git/
+.gitignore
+
+# IDE
+.vs/
+.vscode/
+*.user
+*.suo
+
+# Build outputs (will be rebuilt)
+**/bin/
+**/obj/
+**/Logs/
+
+# Tests (optional - remove if you want to run tests on Railway)
+application/backend/tests/
+
+# Environment templates
+.env.template
+appsettings.*.json.template

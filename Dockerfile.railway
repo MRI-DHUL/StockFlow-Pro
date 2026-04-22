@@ -1,0 +1,47 @@
+# Build Stage
+FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
+WORKDIR /src
+
+# Copy solution and project files
+COPY ["application/backend/StockFlow.sln", "./"]
+COPY ["application/backend/src/StockFlow.API/StockFlow.API.csproj", "src/StockFlow.API/"]
+COPY ["application/backend/src/StockFlow.Application/StockFlow.Application.csproj", "src/StockFlow.Application/"]
+COPY ["application/backend/src/StockFlow.Domain/StockFlow.Domain.csproj", "src/StockFlow.Domain/"]
+COPY ["application/backend/src/StockFlow.Infrastructure/StockFlow.Infrastructure.csproj", "src/StockFlow.Infrastructure/"]
+
+# Restore dependencies
+RUN dotnet restore "src/StockFlow.API/StockFlow.API.csproj"
+
+# Copy source code
+COPY application/backend/ ./
+
+# Build the application
+WORKDIR "/src/src/StockFlow.API"
+RUN dotnet build "StockFlow.API.csproj" -c Release -o /app/build
+
+# Publish Stage
+FROM build AS publish
+RUN dotnet publish "StockFlow.API.csproj" -c Release -o /app/publish /p:UseAppHost=false
+
+# Runtime Stage
+FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS final
+WORKDIR /app
+
+# Install curl for health checks (optional for Railway)
+RUN apt-get update && apt-get install -y curl && rm -rf /var/lib/apt/lists/*
+
+# Copy published files
+COPY --from=publish /app/publish .
+
+# Create logs directory
+RUN mkdir -p /app/Logs && chmod 777 /app/Logs
+
+# Railway provides PORT environment variable dynamically
+ENV ASPNETCORE_ENVIRONMENT=Production
+
+# Expose port (Railway will override this with $PORT)
+EXPOSE 8080
+
+# Run the application
+# Railway will set PORT env variable, ASP.NET Core will bind to it via ASPNETCORE_URLS
+CMD ASPNETCORE_URLS=http://*:$PORT dotnet StockFlow.API.dll

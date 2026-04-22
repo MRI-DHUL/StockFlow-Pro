@@ -1,0 +1,15 @@
+[phases.setup]
+nixPkgs = ["...", "curl"]
+
+[phases.build]
+cmds = [
+  "cd application/backend",
+  "dotnet restore",
+  "dotnet publish src/StockFlow.API/StockFlow.API.csproj -c Release -o /app/publish"
+]
+
+[phases.start]
+cmd = "cd /app/publish && dotnet StockFlow.API.dll"
+
+[variables]
+ASPNETCORE_ENVIRONMENT = "Production"
