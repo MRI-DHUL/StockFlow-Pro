@@ -35,7 +35,26 @@ jobs:
         env:
           NODE_ENV: production
 
+      - name: Check FTP secrets
+        id: check_secrets
+        run: |
+          if [ -z "${{ secrets.FTP_SERVER }}" ] || [ -z "${{ secrets.FTP_USERNAME }}" ] || [ -z "${{ secrets.FTP_PASSWORD }}" ]; then
+            echo "secrets_configured=false" >> $GITHUB_OUTPUT
+            echo "⚠️ FTP secrets not configured. Skipping deployment."
+            echo ""
+            echo "To enable automatic deployment to InfinityFree:"
+            echo "1. Go to Settings → Secrets and variables → Actions"
+            echo "2. Add the following secrets:"
+            echo "   - FTP_SERVER (e.g., ftpupload.net)"
+            echo "   - FTP_USERNAME (your InfinityFree FTP username)"
+            echo "   - FTP_PASSWORD (your InfinityFree FTP password)"
+          else
+            echo "secrets_configured=true" >> $GITHUB_OUTPUT
+            echo "✅ FTP secrets configured"
+          fi
+
       - name: Deploy to InfinityFree via FTP
+        if: steps.check_secrets.outputs.secrets_configured == 'true'
         uses: SamKirkland/FTP-Deploy-Action@v4.3.4
         with:
           server: ${{ secrets.FTP_SERVER }}
@@ -50,6 +69,14 @@ jobs:
             **/node_modules/**
 
       - name: Deployment complete
+        if: steps.check_secrets.outputs.secrets_configured == 'true'
         run: |
           echo "✅ Frontend deployed successfully to InfinityFree!"
           echo "🌐 Your app should be live at your InfinityFree domain"
+      
+      - name: Build artifacts ready
+        if: steps.check_secrets.outputs.secrets_configured == 'false'
+        run: |
+          echo "📦 Build completed successfully!"
+          echo "⚠️ Deployment skipped - FTP secrets not configured"
+          echo "The built files are ready in dist/ folder"
