@@ -1,6 +1,6 @@
 export const environment = {
   production: true,
-  apiUrl: 'https://api.stockflowpro.com/api/v1', // Update with actual production API URL
+  apiUrl: 'https://stockflow-pro.up.railway.app/api/v1',
   pusher: {
     appKey: '3a6db031b2381d1e78ec',
     cluster: 'ap2',
