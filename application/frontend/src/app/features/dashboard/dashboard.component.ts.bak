@@ -386,6 +386,16 @@ import { WarehouseService } from '../../core/services/warehouse.service';
       span {
         color: #1a1d29;
       }
+      
+      &:hover {
+        border-color: #667eea;
+        background: #f5f6fa;
+        transform: translateX(4px);
+        
+        mat-icon {
+          color: #667eea;
+        }
+      }
     }
 
     .empty-state {
@@ -529,6 +539,168 @@ import { WarehouseService } from '../../core/services/warehouse.service';
 
       .card-value {
         font-size: 1.8rem;
+      }
+    }
+  `]
+})
+export class DashboardComponent implements OnInit {
+      border-radius: 12px;
+      background: rgba(255,255,255,0.9);
+      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    }
+
+    .stat-icon.products {
+      color: #3498db;
+      background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
+      color: white;
+    }
+
+    .stat-icon.warehouses {
+      color: #2ecc71;
+      background: linear-gradient(135deg, #2ecc71 0%, #27ae60 100%);
+      color: white;
+    }
+
+    .stat-icon.low-stock {
+      color: #f39c12;
+      background: linear-gradient(135deg, #f39c12 0%, #e67e22 100%);
+      color: white;
+    }
+
+    .stat-icon.orders {
+      color: #9b59b6;
+      background: linear-gradient(135deg, #9b59b6 0%, #8e44ad 100%);
+      color: white;
+    }
+
+    .stat-info {
+      flex: 1;
+    }
+
+    .stat-info h3 {
+      margin: 0;
+      font-size: 2.5em;
+      font-weight: 700;
+      color: #2c3e50;
+      line-height: 1;
+    }
+
+    .stat-info p {
+      margin: 8px 0 0 0;
+      color: #7f8c8d;
+      font-size: 0.95rem;
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .quick-actions {
+      margin-bottom: 40px;
+    }
+
+    .quick-actions h2 {
+      margin-bottom: 20px;
+      font-size: 1.8rem;
+      font-weight: 600;
+      color: #2c3e50;
+    }
+
+    .actions-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 20px;
+    }
+
+    .actions-grid button {
+      height: 64px;
+      font-size: 1rem;
+      font-weight: 600;
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+      transition: all 0.3s ease;
+    }
+
+    .actions-grid button:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 8px 20px rgba(0,0,0,0.2);
+    }
+
+    .actions-grid button mat-icon {
+      margin-right: 8px;
+      font-size: 24px;
+    }
+
+    .recent-activity mat-card {
+      margin-top: 24px;
+      border-radius: 16px;
+      overflow: hidden;
+    }
+
+    .notification-item {
+      display: flex;
+      gap: 16px;
+      padding: 16px;
+      border-bottom: 1px solid #ecf0f1;
+      transition: all 0.2s ease;
+      border-radius: 8px;
+      margin: 4px 0;
+    }
+
+    .notification-item:last-child {
+      border-bottom: none;
+    }
+
+    .notification-item:hover {
+      background-color: #f8f9fa;
+      transform: translateX(4px);
+    }
+
+    .notification-icon {
+      color: #3498db;
+      background: rgba(52, 152, 219, 0.1);
+      border-radius: 50%;
+      padding: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .notification-content {
+      flex: 1;
+    }
+
+    .notification-message {
+      margin: 0;
+      font-size: 0.95em;
+      color: #2c3e50;
+      font-weight: 500;
+    }
+
+    .notification-time {
+      color: #95a5a6;
+      font-size: 0.85em;
+      margin-top: 4px;
+      display: block;
+    }
+
+    .no-data {
+      padding: 48px;
+      text-align: center;
+      color: #95a5a6;
+      font-size: 1.1rem;
+    }
+
+    @media (max-width: 768px) {
+      h1 {
+        font-size: 2rem;
+      }
+
+      .stats-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .actions-grid {
+        grid-template-columns: 1fr;
       }
     }
   `]
