@@ -3,7 +3,7 @@ name: Deploy to Railway
 on:
   push:
     branches:
-      - railway
+      - main
   workflow_dispatch:
 
 jobs:
