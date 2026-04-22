@@ -32,6 +32,17 @@ try
     // Add Serilog
     builder.Host.UseSerilog();
 
+    // Add CORS
+    builder.Services.AddCors(options =>
+    {
+        options.AddPolicy("AllowAll", policy =>
+        {
+            policy.AllowAnyOrigin()
+                  .AllowAnyMethod()
+                  .AllowAnyHeader();
+        });
+    });
+
     // Add services to the container.
     builder.Services.AddControllers();
     builder.Services.AddHttpContextAccessor();
@@ -240,6 +251,10 @@ try
 
     // Configure the HTTP request pipeline.
     app.UseSerilogRequestLogging(); // Add Serilog HTTP request logging
+    
+    // Enable CORS
+    app.UseCors("AllowAll");
+    
     app.UseMiddleware<GlobalExceptionHandlingMiddleware>();
 
     if (app.Environment.IsDevelopment())
