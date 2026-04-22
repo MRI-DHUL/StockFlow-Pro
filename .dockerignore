@@ -1,12 +1,7 @@
 # .dockerignore at repository root for Railway
 
-# Frontend (not needed)
+# Frontend (not needed for backend deployment)
 application/frontend/
-
-# Documentation
-*.md
-!README.md
-!application/backend/README.md
 
 # Git
 .git/
@@ -15,8 +10,6 @@ application/frontend/
 # IDE
 .vs/
 .vscode/
-**/.vs/
-**/.vscode/
 *.user
 *.suo
 
@@ -24,6 +17,8 @@ application/frontend/
 deploy-azure.ps1
 deploy-azure.sh
 .env.template
+*.md
+!application/backend/README.md
 
 # Build outputs (Docker will rebuild these)
 **/bin/
@@ -35,5 +30,5 @@ deploy-azure.sh
 **/Logs/
 **/*.log
 
-# Tests
+# Tests (optional - include if needed for integration tests)
 application/backend/tests/
