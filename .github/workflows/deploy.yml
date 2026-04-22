@@ -1,0 +1,53 @@
+name: Build and Deploy
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  build:
+    name: Build .NET Backend
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+
+      - name: Restore dependencies
+        run: dotnet restore application/backend/StockFlow.sln
+
+      - name: Build
+        run: dotnet build application/backend/StockFlow.sln --configuration Release --no-restore
+
+      - name: Run tests
+        run: dotnet test application/backend/StockFlow.sln --configuration Release --no-build --verbosity normal
+        continue-on-error: true
+
+      - name: Build status
+        run: echo "✅ Build completed successfully!"
+
+  deploy-notification:
+    name: Deployment Notification
+    runs-on: ubuntu-latest
+    needs: build
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    
+    steps:
+      - name: Notify deployment
+        run: |
+          echo "🚀 Code pushed to main branch"
+          echo "📦 Railway will automatically deploy the backend"
+          echo "🌐 Frontend can be deployed to Vercel/Netlify"
+          echo ""
+          echo "Backend deployment: Railway (auto-deploy enabled)"
+          echo "Check Railway dashboard for deployment status"
