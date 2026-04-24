@@ -7,10 +7,10 @@ export default defineConfig({
   testDir: './e2e',
   /* Run tests in files in parallel */
   fullyParallel: true,
-  /* Fail the build on CI if you accidentally left test.only in the source code. */
-  forbidOnly: !!process.env.CI,
-  /* Retry on CI only */
-  retries: process.env.CI ? 2 : 0,
+  /* Fail the build if you accidentally left test.only in the source code. */
+  forbidOnly: false,
+  /* Retry failed tests */
+  retries: 0,
   /* Use single worker for sequential test execution */
   workers: 1,
   /* Reporter to use. See https://playwright.dev/docs/test-reporters */
@@ -57,7 +57,7 @@ export default defineConfig({
   webServer: {
     command: 'npm run start',
     url: 'http://localhost:4200',
-    reuseExistingServer: !process.env.CI,
+    reuseExistingServer: true,
     timeout: 120000,
   },
 });
