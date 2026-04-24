@@ -45,4 +45,26 @@ public class AuditLogsController : ControllerBase
 
         return Ok(auditLog);
     }
+
+    /// <summary>
+    /// Get audit logs with filtering (Admin only)
+    /// </summary>
+    [HttpGet]
+    [ProducesResponseType(typeof(IEnumerable<AuditLogDto>), StatusCodes.Status200OK)]
+    public async Task<ActionResult<IEnumerable<AuditLogDto>>> GetAll([FromQuery] AuditLogFilterParams filterParams)
+    {
+        var auditLogs = await _auditLogService.GetAllAsync(filterParams);
+        return Ok(auditLogs);
+    }
+
+    /// <summary>
+    /// Get audit logs for a specific entity (Admin only)
+    /// </summary>
+    [HttpGet("entity/{entityName}/{entityId}")]
+    [ProducesResponseType(typeof(IEnumerable<AuditLogDto>), StatusCodes.Status200OK)]
+    public async Task<ActionResult<IEnumerable<AuditLogDto>>> GetByEntity(string entityName, Guid entityId)
+    {
+        var auditLogs = await _auditLogService.GetByEntityAsync(entityName, entityId);
+        return Ok(auditLogs);
+    }
 }

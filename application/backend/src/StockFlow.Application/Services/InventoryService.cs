@@ -127,4 +127,14 @@ public class InventoryService : IInventoryService
 
         return result != null ? _mapper.Map<InventoryDto>(result) : null;
     }
+
+    public async Task<InventoryDto?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
+    {
+        var inventory = await _inventoryRepository.Query()
+            .Include(i => i.Product)
+            .Include(i => i.Warehouse)
+            .FirstOrDefaultAsync(i => i.Id == id, cancellationToken);
+
+        return inventory != null ? _mapper.Map<InventoryDto>(inventory) : null;
+    }
 }

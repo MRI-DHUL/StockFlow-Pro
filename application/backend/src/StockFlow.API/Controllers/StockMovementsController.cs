@@ -45,6 +45,17 @@ public class StockMovementsController : ControllerBase
     }
 
     /// <summary>
+    /// Get stock movements by product ID
+    /// </summary>
+    [HttpGet("product/{productId}")]
+    [ProducesResponseType(typeof(IEnumerable<StockMovementDto>), StatusCodes.Status200OK)]
+    public async Task<ActionResult<IEnumerable<StockMovementDto>>> GetByProductId(Guid productId)
+    {
+        var movements = await _stockMovementService.GetByProductIdAsync(productId);
+        return Ok(movements);
+    }
+
+    /// <summary>
     /// Create a new stock movement (automatically updates inventory)
     /// </summary>
     [HttpPost]

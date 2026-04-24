@@ -1,4 +1,4 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, OnInit, inject, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { MatTableModule } from '@angular/material/table';
@@ -38,10 +38,6 @@ import { InventoryFormComponent } from '../inventory-form/inventory-form.compone
     <mat-card>
       <mat-card-header>
         <mat-card-title>Inventory Management</mat-card-title>
-        <button mat-raised-button color="accent" (click)="openInventoryDialog()">
-          <mat-icon>add</mat-icon>
-          Adjust Stock
-        </button>
       </mat-card-header>
       <mat-card-content>
         <!-- Filters -->
@@ -81,23 +77,18 @@ import { InventoryFormComponent } from '../inventory-form/inventory-form.compone
               <td mat-cell *matCellDef="let item">{{ item.warehouseName }}</td>
             </ng-container>
 
-            <ng-container matColumnDef="quantityOnHand">
-              <th mat-header-cell *matHeaderCellDef>On Hand</th>
-              <td mat-cell *matCellDef="let item">{{ item.quantityOnHand }}</td>
-            </ng-container>
-
-            <ng-container matColumnDef="quantityReserved">
-              <th mat-header-cell *matHeaderCellDef>Reserved</th>
-              <td mat-cell *matCellDef="let item">{{ item.quantityReserved }}</td>
-            </ng-container>
-
-            <ng-container matColumnDef="quantityAvailable">
-              <th mat-header-cell *matHeaderCellDef>Available</th>
+            <ng-container matColumnDef="quantity">
+              <th mat-header-cell *matHeaderCellDef>Quantity</th>
               <td mat-cell *matCellDef="let item">
-                <span [class]="item.quantityAvailable < 10 ? 'low-stock' : ''">
-                  {{ item.quantityAvailable }}
+                <span [class]="item.isLowStock ? 'low-stock' : ''">
+                  {{ item.quantity }}
                 </span>
               </td>
+            </ng-container>
+
+            <ng-container matColumnDef="threshold">
+              <th mat-header-cell *matHeaderCellDef>Threshold</th>
+              <td mat-cell *matCellDef="let item">{{ item.threshold }}</td>
             </ng-container>
 
             <ng-container matColumnDef="actions">
@@ -210,9 +201,8 @@ import { InventoryFormComponent } from '../inventory-form/inventory-form.compone
       background: white;
 
       th {
-        background: white;
-        border-bottom: 2px solid black;
-        color: black !important;
+        background: #000000;
+        color: white !important;
         font-weight: 700;
         font-size: 0.95rem;
         text-transform: uppercase;
@@ -236,18 +226,13 @@ import { InventoryFormComponent } from '../inventory-form/inventory-form.compone
     }
 
     .low-stock {
-      color: #e74c3c;
+      color: white !important;
       font-weight: 700;
-      background: rgba(231, 76, 60, 0.1);
+      background: #000000;
+      border: 2px solid #000000;
       padding: 4px 12px;
       border-radius: 12px;
       display: inline-block;
-      animation: pulse 2s ease-in-out infinite;
-    }
-
-    @keyframes pulse {
-      0%, 100% { opacity: 1; }
-      50% { opacity: 0.7; }
     }
   `]
 })
@@ -257,13 +242,14 @@ export class InventoryListComponent implements OnInit {
   private readonly dialog = inject(MatDialog);
   private readonly toastr = inject(ToastrService);
   private readonly fb = inject(FormBuilder);
+  private readonly cdr = inject(ChangeDetectorRef);
 
   inventory: InventoryItem[] = [];
   warehouses: any[] = [];
   totalCount = 0;
   pageSize = 10;
   pageNumber = 1;
-  displayedColumns = ['productName', 'warehouseName', 'quantityOnHand', 'quantityReserved', 'quantityAvailable', 'actions'];
+  displayedColumns = ['productName', 'warehouseName', 'quantity', 'threshold', 'actions'];
 
   filterForm: FormGroup = this.fb.group({
     warehouseId: ['']
@@ -290,8 +276,9 @@ export class InventoryListComponent implements OnInit {
 
     this.inventoryService.getPaged(filters).subscribe({
       next: (response: PagedResponse<InventoryItem>) => {
-        this.inventory = response.items;
+        this.inventory = [...response.items];
         this.totalCount = response.totalCount;
+        this.cdr.detectChanges();
       },
       error: (error) => {
         this.toastr.error('Failed to load inventory', 'Error');
@@ -303,7 +290,8 @@ export class InventoryListComponent implements OnInit {
   loadWarehouses(): void {
     this.warehouseService.getAll().subscribe({
       next: (warehouses) => {
-        this.warehouses = warehouses;
+        this.warehouses = [...warehouses];
+        this.cdr.detectChanges();
       }
     });
   }

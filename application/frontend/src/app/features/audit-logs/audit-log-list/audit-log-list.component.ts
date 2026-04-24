@@ -1,4 +1,4 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, OnInit, inject, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { MatTableModule } from '@angular/material/table';
@@ -191,9 +191,8 @@ import { AuditLog } from '../../../shared/models/domain.models';
       background: white;
 
       th {
-        background: white;
-        border-bottom: 2px solid black;
-        color: black !important;
+        background: #000000;
+        color: white !important;
         font-weight: 700;
         font-size: 0.95rem;
         text-transform: uppercase;
@@ -213,9 +212,9 @@ import { AuditLog } from '../../../shared/models/domain.models';
     }
 
     .action-created {
-      color: #27ae60;
+      color: white !important;
       font-weight: 700;
-      background: rgba(46, 204, 113, 0.1);
+      background: #000000;
       padding: 6px 14px;
       border-radius: 16px;
       text-transform: uppercase;
@@ -225,9 +224,10 @@ import { AuditLog } from '../../../shared/models/domain.models';
     }
 
     .action-updated {
-      color: #3498db;
+      color: #000000;
       font-weight: 700;
-      background: rgba(52, 152, 219, 0.1);
+      background: white;
+      border: 2px solid #000000;
       padding: 6px 14px;
       border-radius: 16px;
       text-transform: uppercase;
@@ -237,9 +237,9 @@ import { AuditLog } from '../../../shared/models/domain.models';
     }
 
     .action-deleted {
-      color: #e74c3c;
+      color: white !important;
       font-weight: 700;
-      background: rgba(231, 76, 60, 0.1);
+      background: #000000;
       padding: 6px 14px;
       border-radius: 16px;
       text-transform: uppercase;
@@ -253,6 +253,7 @@ export class AuditLogListComponent implements OnInit {
   private readonly auditLogService = inject(AuditLogService);
   private readonly toastr = inject(ToastrService);
   private readonly fb = inject(FormBuilder);
+  private readonly cdr = inject(ChangeDetectorRef);
 
   auditLogs: AuditLog[] = [];
   displayedColumns = ['timestamp', 'entityName', 'action', 'performedBy', 'ipAddress', 'changes'];
@@ -278,7 +279,8 @@ export class AuditLogListComponent implements OnInit {
 
     this.auditLogService.getAll(filters).subscribe({
       next: (logs) => {
-        this.auditLogs = logs;
+        this.auditLogs = [...logs];
+        this.cdr.detectChanges();
       },
       error: (error) => {
         this.toastr.error('Failed to load audit logs', 'Error');
@@ -302,8 +304,15 @@ export class AuditLogListComponent implements OnInit {
   }
 
   viewChanges(log: AuditLog): void {
-    if (log.changes) {
-      this.toastr.info(log.changes, 'Changes', { timeOut: 10000 });
+    const changes = [];
+    if (log.oldValues) {
+      changes.push(`Old: ${log.oldValues}`);
+    }
+    if (log.newValues) {
+      changes.push(`New: ${log.newValues}`);
+    }
+    if (changes.length > 0) {
+      this.toastr.info(changes.join(' | '), 'Changes', { timeOut: 10000 });
     }
   }
 

@@ -58,6 +58,17 @@ public class ProductsController : ControllerBase
     }
 
     /// <summary>
+    /// Get all product categories
+    /// </summary>
+    [HttpGet("categories")]
+    [ProducesResponseType(typeof(IEnumerable<string>), StatusCodes.Status200OK)]
+    public async Task<ActionResult<IEnumerable<string>>> GetCategories()
+    {
+        var categories = await _productService.GetCategoriesAsync();
+        return Ok(categories);
+    }
+
+    /// <summary>
     /// Create a new product
     /// </summary>
     [HttpPost]

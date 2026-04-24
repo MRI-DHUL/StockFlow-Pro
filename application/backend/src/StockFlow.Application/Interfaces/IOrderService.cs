@@ -9,4 +9,5 @@ public interface IOrderService
     Task<OrderDto?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default);
     Task<OrderDto> CreateAsync(CreateOrderDto createOrderDto, CancellationToken cancellationToken = default);
     Task<OrderDto?> UpdateAsync(Guid id, UpdateOrderDto updateOrderDto, CancellationToken cancellationToken = default);
+    Task<bool> DeleteAsync(Guid id, CancellationToken cancellationToken = default);
 }

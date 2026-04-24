@@ -1,4 +1,4 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, OnInit, inject, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
@@ -102,35 +102,27 @@ import { ProductFormComponent } from '../product-form/product-form.component';
 
             <ng-container matColumnDef="category">
               <th mat-header-cell *matHeaderCellDef>Category</th>
-              <td mat-cell *matCellDef="let product">{{ product.category }}</td>
+              <td mat-cell *matCellDef="let product">
+                <span class="category-badge" [class]="getCategoryClass(product.category)">
+                  {{ product.category }}
+                </span>
+              </td>
             </ng-container>
 
             <ng-container matColumnDef="unitPrice">
               <th mat-header-cell *matHeaderCellDef>Unit Price</th>
-              <td mat-cell *matCellDef="let product">{{ product.unitPrice | currency }}</td>
-            </ng-container>
-
-            <ng-container matColumnDef="reorderLevel">
-              <th mat-header-cell *matHeaderCellDef>Reorder Level</th>
-              <td mat-cell *matCellDef="let product">{{ product.reorderLevel }}</td>
-            </ng-container>
-
-            <ng-container matColumnDef="isActive">
-              <th mat-header-cell *matHeaderCellDef>Status</th>
               <td mat-cell *matCellDef="let product">
-                <span [class]="product.isActive ? 'status-active' : 'status-inactive'">
-                  {{ product.isActive ? 'Active' : 'Inactive' }}
-                </span>
+                <span class="price-cell">{{ product.unitPrice | currency }}</span>
               </td>
             </ng-container>
 
             <ng-container matColumnDef="actions">
               <th mat-header-cell *matHeaderCellDef>Actions</th>
-              <td mat-cell *matCellDef="let product">
-                <button mat-icon-button color="primary" (click)="openProductDialog(product)" matTooltip="Edit">
+              <td mat-cell *matCellDef="let product" class="actions-cell">
+                <button mat-mini-fab color="primary" class="action-btn edit-btn" (click)="openProductDialog(product)" matTooltip="Edit">
                   <mat-icon>edit</mat-icon>
                 </button>
-                <button mat-icon-button color="warn" (click)="deleteProduct(product)" matTooltip="Delete">
+                <button mat-mini-fab color="warn" class="action-btn delete-btn" (click)="deleteProduct(product)" matTooltip="Delete">
                   <mat-icon>delete</mat-icon>
                 </button>
               </td>
@@ -239,21 +231,138 @@ import { ProductFormComponent } from '../product-form/product-form.component';
 
     table {
       width: 100%;
+      background: white;
+      
+      th {
+        background: #000000;
+        color: white !important;
+        font-weight: 700;
+        font-size: 0.9rem;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        padding: 18px 16px !important;
+        border: none;
+      }
+
+      td {
+        padding: 16px !important;
+        font-size: 0.95rem;
+        color: #000000;
+        border-bottom: 1px solid #e5e5e5;
+      }
+
+      tr {
+        &:nth-child(even) {
+          background: #fafafa;
+        }
+      }
+    }
+
+    .category-badge {
+      display: inline-block;
+      padding: 6px 16px;
+      border-radius: 20px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      text-transform: capitalize;
+      letter-spacing: 0.3px;
+      border: 2px solid;
+    }
+
+    .category-electronics {
+      background: #000000;
+      color: white !important;
+      border-color: #000000;
+    }
+
+    .category-office-supplies {
+      background: white;
+      color: #000000;
+      border-color: #000000;
+    }
+
+    .category-furniture {
+      background: #000000;
+      color: white !important;
+      border-color: #000000;
+    }
+
+    .category-hardware {
+      background: white;
+      color: #000000;
+      border-color: #000000;
+    }
+
+    .category-packaging {
+      background: #000000;
+      color: white !important;
+      border-color: #000000;
+    }
+
+    .category-default {
+      background: white;
+      color: #000000;
+      border-color: #000000;
+    }
+
+    .price-cell {
+      font-weight: 700;
+      font-size: 1.1rem;
+      color: #000000;
+    }
+
+    .actions-cell {
+      display: flex;
+      gap: 8px;
+      justify-content: flex-start;
+      align-items: center;
+    }
+
+    .action-btn {
+      width: 40px !important;
+      height: 40px !important;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+      
+      mat-icon {
+        font-size: 20px;
+        width: 20px;
+        height: 20px;
+      }
+    }
+
+    .edit-btn {
+      background: #000000 !important;
+      color: white !important;
+      
+      mat-icon {
+        color: white !important;
+      }
+    }
+
+    .delete-btn {
+      background: white !important;
+      color: #000000 !important;
+      border: 2px solid #000000;
+      
+      mat-icon {
+        color: #000000 !important;
+      }
     }
 
     .status-active {
-      color: #27ae60;
+      color: #000000;
       font-weight: 600;
-      background: rgba(39, 174, 96, 0.1);
+      background: white;
+      border: 2px solid #000000;
       padding: 6px 14px;
       border-radius: 16px;
       display: inline-block;
     }
 
     .status-inactive {
-      color: #e74c3c;
+      color: white !important;
       font-weight: 600;
-      background: rgba(231, 76, 60, 0.1);
+      background: #000000;
       padding: 6px 14px;
       border-radius: 16px;
       display: inline-block;
@@ -279,13 +388,14 @@ export class ProductListComponent implements OnInit {
   private readonly dialog = inject(MatDialog);
   private readonly toastr = inject(ToastrService);
   private readonly fb = inject(FormBuilder);
+  private readonly cdr = inject(ChangeDetectorRef);
 
   products: Product[] = [];
   categories: string[] = [];
   totalCount = 0;
   pageSize = 10;
   pageNumber = 1;
-  displayedColumns = ['sku', 'name', 'category', 'unitPrice', 'reorderLevel', 'isActive', 'actions'];
+  displayedColumns = ['sku', 'name', 'category', 'unitPrice', 'actions'];
 
   filterForm: FormGroup = this.fb.group({
     searchTerm: [''],
@@ -309,8 +419,9 @@ export class ProductListComponent implements OnInit {
 
     this.productService.getPaged(filters).subscribe({
       next: (response: PagedResponse<Product>) => {
-        this.products = response.items;
+        this.products = [...response.items]; // Create new array reference
         this.totalCount = response.totalCount;
+        this.cdr.detectChanges(); // Trigger change detection
       },
       error: (error) => {
         this.toastr.error('Failed to load products', 'Error');
@@ -322,7 +433,8 @@ export class ProductListComponent implements OnInit {
   loadCategories(): void {
     this.productService.getCategories().subscribe({
       next: (categories) => {
-        this.categories = categories;
+        this.categories = [...categories]; // Create new array reference
+        this.cdr.detectChanges(); // Trigger change detection
       },
       error: (error) => {
         console.error('Failed to load categories', error);
@@ -384,5 +496,11 @@ export class ProductListComponent implements OnInit {
         });
       }
     });
+  }
+
+  getCategoryClass(category: string): string {
+    if (!category) return 'category-default';
+    const normalized = category.toLowerCase().replace(/\s+/g, '-');
+    return `category-${normalized}`;
   }
 }

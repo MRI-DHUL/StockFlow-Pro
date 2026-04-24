@@ -42,6 +42,22 @@ public class InventoryController : ControllerBase
     }
 
     /// <summary>
+    /// Get inventory item by ID
+    /// </summary>
+    [HttpGet("{id}")]
+    [ProducesResponseType(typeof(InventoryDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<ActionResult<InventoryDto>> GetById(Guid id)
+    {
+        var inventory = await _inventoryService.GetByIdAsync(id);
+        
+        if (inventory == null)
+            return NotFound(new { message = $"Inventory with ID {id} not found." });
+
+        return Ok(inventory);
+    }
+
+    /// <summary>
     /// Get low stock items
     /// </summary>
     [HttpGet("low-stock")]

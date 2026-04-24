@@ -15,7 +15,7 @@ export class WarehouseService {
     return this.http.get<Warehouse[]>(this.apiUrl);
   }
 
-  getById(id: number): Observable<Warehouse> {
+  getById(id: string): Observable<Warehouse> {
     return this.http.get<Warehouse>(`${this.apiUrl}/${id}`);
   }
 
@@ -23,11 +23,11 @@ export class WarehouseService {
     return this.http.post<Warehouse>(this.apiUrl, warehouse);
   }
 
-  update(id: number, warehouse: UpdateWarehouseDto): Observable<Warehouse> {
+  update(id: string, warehouse: UpdateWarehouseDto): Observable<Warehouse> {
     return this.http.put<Warehouse>(`${this.apiUrl}/${id}`, warehouse);
   }
 
-  delete(id: number): Observable<void> {
+  delete(id: string): Observable<void> {
     return this.http.delete<void>(`${this.apiUrl}/${id}`);
   }
 }

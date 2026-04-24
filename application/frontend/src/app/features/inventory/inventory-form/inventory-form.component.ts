@@ -30,24 +30,24 @@ import { InventoryItem, UpdateInventoryDto } from '../../../shared/models/domain
 
       <form [formGroup]="inventoryForm" class="inventory-form">
         <mat-form-field appearance="outline">
-          <mat-label>Quantity On Hand</mat-label>
-          <input matInput type="number" formControlName="quantityOnHand">
-          <mat-error *ngIf="inventoryForm.get('quantityOnHand')?.hasError('required')">
+          <mat-label>Quantity</mat-label>
+          <input matInput type="number" formControlName="quantity">
+          <mat-error *ngIf="inventoryForm.get('quantity')?.hasError('required')">
             Quantity is required
           </mat-error>
-          <mat-error *ngIf="inventoryForm.get('quantityOnHand')?.hasError('min')">
+          <mat-error *ngIf="inventoryForm.get('quantity')?.hasError('min')">
             Quantity must be 0 or greater
           </mat-error>
         </mat-form-field>
 
         <mat-form-field appearance="outline">
-          <mat-label>Quantity Reserved</mat-label>
-          <input matInput type="number" formControlName="quantityReserved">
-          <mat-error *ngIf="inventoryForm.get('quantityReserved')?.hasError('required')">
-            Quantity is required
+          <mat-label>Threshold (Reorder Level)</mat-label>
+          <input matInput type="number" formControlName="threshold">
+          <mat-error *ngIf="inventoryForm.get('threshold')?.hasError('required')">
+            Threshold is required
           </mat-error>
-          <mat-error *ngIf="inventoryForm.get('quantityReserved')?.hasError('min')">
-            Quantity must be 0 or greater
+          <mat-error *ngIf="inventoryForm.get('threshold')?.hasError('min')">
+            Threshold must be 0 or greater
           </mat-error>
         </mat-form-field>
       </form>
@@ -92,15 +92,20 @@ export class InventoryFormComponent implements OnInit {
 
   ngOnInit(): void {
     this.inventoryForm = this.fb.group({
-      quantityOnHand: [this.data.quantityOnHand, [Validators.required, Validators.min(0)]],
-      quantityReserved: [this.data.quantityReserved, [Validators.required, Validators.min(0)]]
+      quantity: [this.data.quantity, [Validators.required, Validators.min(0)]],
+      threshold: [this.data.threshold, [Validators.required, Validators.min(0)]]
     });
   }
 
   onSubmit(): void {
     if (this.inventoryForm.valid && !this.isSubmitting) {
       this.isSubmitting = true;
-      const updateDto: UpdateInventoryDto = this.inventoryForm.value;
+      const updateDto: UpdateInventoryDto = {
+        productId: this.data.productId,
+        warehouseId: this.data.warehouseId,
+        quantity: this.inventoryForm.value.quantity,
+        threshold: this.inventoryForm.value.threshold
+      };
 
       this.inventoryService.update(this.data.id, updateDto).subscribe({
         next: () => {

@@ -44,7 +44,7 @@ export class ProductService {
     return this.http.get<PagedResponse<Product>>(`${this.apiUrl}/paged`, { params });
   }
 
-  getById(id: number): Observable<Product> {
+  getById(id: string): Observable<Product> {
     return this.http.get<Product>(`${this.apiUrl}/${id}`);
   }
 
@@ -52,11 +52,11 @@ export class ProductService {
     return this.http.post<Product>(this.apiUrl, product);
   }
 
-  update(id: number, product: UpdateProductDto): Observable<Product> {
+  update(id: string, product: UpdateProductDto): Observable<Product> {
     return this.http.put<Product>(`${this.apiUrl}/${id}`, product);
   }
 
-  delete(id: number): Observable<void> {
+  delete(id: string): Observable<void> {
     return this.http.delete<void>(`${this.apiUrl}/${id}`);
   }
 

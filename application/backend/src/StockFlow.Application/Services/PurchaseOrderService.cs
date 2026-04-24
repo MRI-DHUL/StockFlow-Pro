@@ -124,6 +124,18 @@ public class PurchaseOrderService : IPurchaseOrderService
         return result != null ? _mapper.Map<PurchaseOrderDto>(result) : null;
     }
 
+    public async Task<bool> DeleteAsync(Guid id, CancellationToken cancellationToken = default)
+    {
+        var purchaseOrder = await _purchaseOrderRepository.GetByIdAsync(id, cancellationToken);
+
+        if (purchaseOrder == null)
+            return false;
+
+        await _purchaseOrderRepository.DeleteAsync(purchaseOrder, cancellationToken);
+
+        return true;
+    }
+
     private static string GeneratePONumber()
     {
         return $"PO-{DateTime.UtcNow:yyyyMMddHHmmss}-{Guid.NewGuid().ToString()[..8].ToUpper()}";

@@ -1,4 +1,4 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, OnInit, inject, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { MatTableModule } from '@angular/material/table';
@@ -214,9 +214,8 @@ import { StockMovement, MovementType } from '../../../shared/models/domain.model
       background: white;
 
       th {
-        background: white;
-        border-bottom: 2px solid black;
-        color: black !important;
+        background: #000000;
+        color: white !important;
         font-weight: 700;
         font-size: 0.95rem;
         text-transform: uppercase;
@@ -236,49 +235,64 @@ import { StockMovement, MovementType } from '../../../shared/models/domain.model
     }
 
     .qty-in {
-      color: #27ae60;
+      color: #000000;
       font-weight: 700;
-      background: rgba(46, 204, 113, 0.1);
+      background: white;
+      border: 2px solid #000000;
       padding: 4px 12px;
       border-radius: 12px;
     }
 
     .qty-out {
-      color: #e74c3c;
+      color: white !important;
       font-weight: 700;
-      background: rgba(231, 76, 60, 0.1);
+      background: #000000;
       padding: 4px 12px;
       border-radius: 12px;
     }
 
     mat-chip.type-in {
-      background: linear-gradient(135deg, #2ecc71 0%, #27ae60 100%) !important;
-      color: white;
+      background: white !important;
+      color: #000000 !important;
+      border: 2px solid #000000;
       font-weight: 700;
       padding: 8px 16px !important;
       border-radius: 16px !important;
       text-transform: uppercase;
       font-size: 0.85rem !important;
+
+      ::ng-deep .mdc-evolution-chip__text-label {
+        color: #000000 !important;
+      }
     }
 
     mat-chip.type-out {
-      background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%) !important;
-      color: white;
+      background: #000000 !important;
+      color: white !important;
       font-weight: 700;
       padding: 8px 16px !important;
       border-radius: 16px !important;
       text-transform: uppercase;
       font-size: 0.85rem !important;
+
+      ::ng-deep .mdc-evolution-chip__text-label {
+        color: white !important;
+      }
     }
 
     mat-chip.type-transfer {
-      background: linear-gradient(135deg, #3498db 0%, #2980b9 100%) !important;
-      color: white;
+      background: white !important;
+      color: #000000 !important;
+      border: 2px solid #000000;
       font-weight: 700;
       padding: 8px 16px !important;
       border-radius: 16px !important;
       text-transform: uppercase;
       font-size: 0.85rem !important;
+
+      ::ng-deep .mdc-evolution-chip__text-label {
+        color: #000000 !important;
+      }
     }
 
     mat-chip.type-adjustment {
@@ -297,6 +311,7 @@ export class StockMovementListComponent implements OnInit {
   private readonly warehouseService = inject(WarehouseService);
   private readonly toastr = inject(ToastrService);
   private readonly fb = inject(FormBuilder);
+  private readonly cdr = inject(ChangeDetectorRef);
 
   movements: StockMovement[] = [];
   warehouses: any[] = [];
@@ -324,7 +339,8 @@ export class StockMovementListComponent implements OnInit {
 
     this.stockMovementService.getAll(filters).subscribe({
       next: (movements) => {
-        this.movements = movements;
+        this.movements = [...movements];
+        this.cdr.detectChanges();
       },
       error: (error) => {
         this.toastr.error('Failed to load stock movements', 'Error');
@@ -336,7 +352,8 @@ export class StockMovementListComponent implements OnInit {
   loadWarehouses(): void {
     this.warehouseService.getAll().subscribe({
       next: (warehouses) => {
-        this.warehouses = warehouses;
+        this.warehouses = [...warehouses];
+        this.cdr.detectChanges();
       }
     });
   }

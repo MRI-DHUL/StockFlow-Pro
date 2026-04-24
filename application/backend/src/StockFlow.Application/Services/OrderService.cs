@@ -38,12 +38,14 @@ public class OrderService : IOrderService
         // Apply filters
         if (!string.IsNullOrWhiteSpace(filterParams.OrderNumber))
         {
-            query = query.Where(o => o.OrderNumber.Contains(filterParams.OrderNumber));
+            var orderNumber = filterParams.OrderNumber.ToLower();
+            query = query.Where(o => o.OrderNumber.ToLower().Contains(orderNumber));
         }
 
         if (!string.IsNullOrWhiteSpace(filterParams.CustomerName))
         {
-            query = query.Where(o => o.CustomerName != null && o.CustomerName.Contains(filterParams.CustomerName));
+            var customerName = filterParams.CustomerName.ToLower();
+            query = query.Where(o => o.CustomerName != null && o.CustomerName.ToLower().Contains(customerName));
         }
 
         if (!string.IsNullOrWhiteSpace(filterParams.Status))
@@ -176,6 +178,19 @@ public class OrderService : IOrderService
             .FirstOrDefaultAsync(o => o.Id == id, cancellationToken);
 
         return result != null ? _mapper.Map<OrderDto>(result) : null;
+    }
+
+    public async Task<bool> DeleteAsync(Guid id, CancellationToken cancellationToken = default)
+    {
+        var order = await _unitOfWork.Orders.GetByIdAsync(id, cancellationToken);
+
+        if (order == null)
+            return false;
+
+        await _unitOfWork.Orders.DeleteAsync(order, cancellationToken);
+        await _unitOfWork.SaveChangesAsync(cancellationToken);
+
+        return true;
     }
 
     private static string GenerateOrderNumber()

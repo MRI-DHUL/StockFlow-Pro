@@ -1,8 +1,11 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, OnInit, inject, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { FormBuilder, FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { MatTableModule } from '@angular/material/table';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
+import { MatInputModule } from '@angular/material/input';
+import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatCardModule } from '@angular/material/card';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { ToastrService } from 'ngx-toastr';
@@ -16,9 +19,12 @@ import { SupplierFormComponent } from '../supplier-form/supplier-form.component'
   standalone: true,
   imports: [
     CommonModule,
+    ReactiveFormsModule,
     MatTableModule,
     MatButtonModule,
     MatIconModule,
+    MatInputModule,
+    MatFormFieldModule,
     MatCardModule,
     MatDialogModule
   ],
@@ -32,6 +38,22 @@ import { SupplierFormComponent } from '../supplier-form/supplier-form.component'
         </button>
       </mat-card-header>
       <mat-card-content>
+        <!-- Filters -->
+        <div class="filters-container">
+          <form [formGroup]="filterForm" class="filters-form">
+            <mat-form-field appearance="outline">
+              <mat-label>Search</mat-label>
+              <input matInput formControlName="searchTerm" placeholder="Search name, email, or phone...">
+            </mat-form-field>
+
+            <button mat-raised-button color="primary" (click)="applyFilters()">
+              <mat-icon>search</mat-icon>
+              Search
+            </button>
+            <button mat-button (click)="resetFilters()">Reset</button>
+          </form>
+        </div>
+
         <div class="table-container">
           <table mat-table [dataSource]="suppliers" class="mat-elevation-z2">
             <ng-container matColumnDef="name">
@@ -39,9 +61,9 @@ import { SupplierFormComponent } from '../supplier-form/supplier-form.component'
               <td mat-cell *matCellDef="let supplier">{{ supplier.name }}</td>
             </ng-container>
 
-            <ng-container matColumnDef="contactName">
-              <th mat-header-cell *matHeaderCellDef>Contact Name</th>
-              <td mat-cell *matCellDef="let supplier">{{ supplier.contactName }}</td>
+            <ng-container matColumnDef="contactInfo">
+              <th mat-header-cell *matHeaderCellDef>Contact</th>
+              <td mat-cell *matCellDef="let supplier">{{ supplier.contactInfo || '-' }}</td>
             </ng-container>
 
             <ng-container matColumnDef="email">
@@ -51,16 +73,7 @@ import { SupplierFormComponent } from '../supplier-form/supplier-form.component'
 
             <ng-container matColumnDef="phone">
               <th mat-header-cell *matHeaderCellDef>Phone</th>
-              <td mat-cell *matCellDef="let supplier">{{ supplier.phone }}</td>
-            </ng-container>
-
-            <ng-container matColumnDef="isActive">
-              <th mat-header-cell *matHeaderCellDef>Status</th>
-              <td mat-cell *matCellDef="let supplier">
-                <span [class]="supplier.isActive ? 'status-active' : 'status-inactive'">
-                  {{ supplier.isActive ? 'Active' : 'Inactive' }}
-                </span>
-              </td>
+              <td mat-cell *matCellDef="let supplier">{{ supplier.phone || '-' }}</td>
             </ng-container>
 
             <ng-container matColumnDef="actions">
@@ -139,14 +152,38 @@ import { SupplierFormComponent } from '../supplier-form/supplier-form.component'
       box-shadow: 0 4px 12px rgba(0,0,0,0.08);
     }
 
+    .filters-container {
+      margin-bottom: 24px;
+      padding: 20px;
+      background: #fafafa;
+      border-radius: 12px;
+      border: 1px solid #e0e0e0;
+    }
+
+    .filters-form {
+      display: flex;
+      gap: 16px;
+      align-items: center;
+      flex-wrap: wrap;
+
+      mat-form-field {
+        flex: 1;
+        min-width: 250px;
+      }
+
+      button {
+        height: 40px;
+        margin-top: 8px;
+      }
+    }
+
     table {
       width: 100%;
       background: white;
 
       th {
-        background: white;
-        border-bottom: 2px solid black;
-        color: black !important;
+        background: #000000;
+        color: white !important;
         font-weight: 700;
         font-size: 0.95rem;
         text-transform: uppercase;
@@ -170,9 +207,10 @@ import { SupplierFormComponent } from '../supplier-form/supplier-form.component'
     }
 
     .status-active {
-      color: #27ae60;
+      color: #000000;
       font-weight: 700;
-      background: rgba(46, 204, 113, 0.1);
+      background: white;
+      border: 2px solid #000000;
       padding: 6px 14px;
       border-radius: 16px;
       text-transform: uppercase;
@@ -181,9 +219,9 @@ import { SupplierFormComponent } from '../supplier-form/supplier-form.component'
     }
 
     .status-inactive {
-      color: #e74c3c;
+      color: white !important;
       font-weight: 700;
-      background: rgba(231, 76, 60, 0.1);
+      background: #000000;
       padding: 6px 14px;
       border-radius: 16px;
       text-transform: uppercase;
@@ -196,9 +234,16 @@ export class SupplierListComponent implements OnInit {
   private readonly supplierService = inject(SupplierService);
   private readonly dialog = inject(MatDialog);
   private readonly toastr = inject(ToastrService);
+  private readonly cdr = inject(ChangeDetectorRef);
+  private readonly fb = inject(FormBuilder);
 
   suppliers: Supplier[] = [];
-  displayedColumns = ['name', 'contactName', 'email', 'phone', 'isActive', 'actions'];
+  allSuppliers: Supplier[] = [];
+  displayedColumns = ['name', 'contactInfo', 'email', 'phone', 'actions'];
+
+  filterForm: FormGroup = this.fb.group({
+    searchTerm: ['']
+  });
 
   ngOnInit(): void {
     this.loadSuppliers();
@@ -207,13 +252,36 @@ export class SupplierListComponent implements OnInit {
   loadSuppliers(): void {
     this.supplierService.getAll().subscribe({
       next: (suppliers) => {
-        this.suppliers = suppliers;
+        this.allSuppliers = [...suppliers];
+        this.applyFilters();
       },
       error: (error) => {
         this.toastr.error('Failed to load suppliers', 'Error');
         console.error(error);
       }
     });
+  }
+
+  applyFilters(): void {
+    const searchTerm = this.filterForm.value.searchTerm?.toLowerCase() || '';
+    
+    if (!searchTerm) {
+      this.suppliers = [...this.allSuppliers];
+    } else {
+      this.suppliers = this.allSuppliers.filter(supplier => 
+        supplier.name.toLowerCase().includes(searchTerm) ||
+        (supplier.email && supplier.email.toLowerCase().includes(searchTerm)) ||
+        (supplier.phone && supplier.phone.toLowerCase().includes(searchTerm)) ||
+        (supplier.contactInfo && supplier.contactInfo.toLowerCase().includes(searchTerm))
+      );
+    }
+    
+    this.cdr.detectChanges();
+  }
+
+  resetFilters(): void {
+    this.filterForm.reset();
+    this.applyFilters();
   }
 
   openSupplierDialog(supplier?: Supplier): void {

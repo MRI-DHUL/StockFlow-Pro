@@ -35,10 +35,10 @@ import { Supplier, CreateSupplierDto, UpdateSupplierDto } from '../../../shared/
         </mat-form-field>
 
         <mat-form-field appearance="outline">
-          <mat-label>Contact Name</mat-label>
-          <input matInput formControlName="contactName" placeholder="Enter contact name">
-          <mat-error *ngIf="supplierForm.get('contactName')?.hasError('required')">
-            Contact name is required
+          <mat-label>Contact Person</mat-label>
+          <input matInput formControlName="contactPerson" placeholder="Enter contact person">
+          <mat-error *ngIf="supplierForm.get('contactPerson')?.hasError('required')">
+            Contact person is required
           </mat-error>
         </mat-form-field>
 
@@ -68,10 +68,6 @@ import { Supplier, CreateSupplierDto, UpdateSupplierDto } from '../../../shared/
             Address is required
           </mat-error>
         </mat-form-field>
-
-        <mat-checkbox *ngIf="isEditMode" formControlName="isActive">
-          Is Active
-        </mat-checkbox>
       </form>
     </mat-dialog-content>
     <mat-dialog-actions align="end">
@@ -112,19 +108,20 @@ export class SupplierFormComponent implements OnInit {
     if (this.isEditMode && this.data) {
       this.supplierForm = this.fb.group({
         name: [this.data.name, Validators.required],
-        contactName: [this.data.contactName, Validators.required],
-        email: [this.data.email, [Validators.required, Validators.email]],
-        phone: [this.data.phone, Validators.required],
-        address: [this.data.address, Validators.required],
-        isActive: [this.data.isActive]
+        contactPerson: [this.data.contactInfo || '', Validators.required],
+        email: [this.data.email || '', [Validators.required, Validators.email]],
+        phone: [this.data.phone || '', Validators.required],
+        address: ['', Validators.required],
+        isActive: [true]
       });
     } else {
       this.supplierForm = this.fb.group({
         name: ['', Validators.required],
-        contactName: ['', Validators.required],
+        contactPerson: ['', Validators.required],
         email: ['', [Validators.required, Validators.email]],
         phone: ['', Validators.required],
-        address: ['', Validators.required]
+        address: ['', Validators.required],
+        isActive: [true]
       });
     }
   }

@@ -1,8 +1,12 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, OnInit, inject, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { FormBuilder, FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { MatTableModule } from '@angular/material/table';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
+import { MatInputModule } from '@angular/material/input';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatSelectModule } from '@angular/material/select';
 import { MatCardModule } from '@angular/material/card';
 import { MatChipsModule } from '@angular/material/chips';
 import { ToastrService } from 'ngx-toastr';
@@ -15,9 +19,13 @@ import { CurrencyFormatterPipe } from '../../../shared/pipes/currency-formatter.
   standalone: true,
   imports: [
     CommonModule,
+    ReactiveFormsModule,
     MatTableModule,
     MatButtonModule,
     MatIconModule,
+    MatInputModule,
+    MatFormFieldModule,
+    MatSelectModule,
     MatCardModule,
     MatChipsModule,
     CurrencyFormatterPipe
@@ -32,6 +40,39 @@ import { CurrencyFormatterPipe } from '../../../shared/pipes/currency-formatter.
         </button>
       </mat-card-header>
       <mat-card-content>
+        <!-- Filters -->
+        <div class="filters-container">
+          <form [formGroup]="filterForm" class="filters-form">
+            <mat-form-field appearance="outline">
+              <mat-label>Search PO Number</mat-label>
+              <input matInput formControlName="poNumber" placeholder="Search...">
+            </mat-form-field>
+
+            <mat-form-field appearance="outline">
+              <mat-label>Supplier Name</mat-label>
+              <input matInput formControlName="supplierName" placeholder="Search...">
+            </mat-form-field>
+
+            <mat-form-field appearance="outline">
+              <mat-label>Status</mat-label>
+              <mat-select formControlName="status">
+                <mat-option value="">All Statuses</mat-option>
+                <mat-option [value]="0">Draft</mat-option>
+                <mat-option [value]="1">Submitted</mat-option>
+                <mat-option [value]="2">Approved</mat-option>
+                <mat-option [value]="3">Received</mat-option>
+                <mat-option [value]="4">Cancelled</mat-option>
+              </mat-select>
+            </mat-form-field>
+
+            <button mat-raised-button color="primary" (click)="applyFilters()">
+              <mat-icon>search</mat-icon>
+              Search
+            </button>
+            <button mat-button (click)="resetFilters()">Reset</button>
+          </form>
+        </div>
+
         <div class="table-container">
           <table mat-table [dataSource]="purchaseOrders" class="mat-elevation-z2">
             <ng-container matColumnDef="poNumber">
@@ -141,14 +182,38 @@ import { CurrencyFormatterPipe } from '../../../shared/pipes/currency-formatter.
       box-shadow: 0 4px 12px rgba(0,0,0,0.08);
     }
 
+    .filters-container {
+      margin-bottom: 24px;
+      padding: 20px;
+      background: #fafafa;
+      border-radius: 12px;
+      border: 1px solid #e0e0e0;
+    }
+
+    .filters-form {
+      display: flex;
+      gap: 16px;
+      align-items: center;
+      flex-wrap: wrap;
+
+      mat-form-field {
+        flex: 1;
+        min-width: 200px;
+      }
+
+      button {
+        height: 40px;
+        margin-top: 8px;
+      }
+    }
+
     table {
       width: 100%;
       background: white;
 
       th {
-        background: white;
-        border-bottom: 2px solid black;
-        color: black !important;
+        background: #000000;
+        color: white !important;
         font-weight: 700;
         font-size: 0.95rem;
         text-transform: uppercase;
@@ -172,62 +237,93 @@ import { CurrencyFormatterPipe } from '../../../shared/pipes/currency-formatter.
     }
 
     mat-chip.status-draft {
-      background: linear-gradient(135deg, #95a5a6 0%, #7f8c8d 100%) !important;
-      color: white;
+      background: #000000 !important;
+      color: white !important;
       font-weight: 700;
       padding: 8px 16px !important;
       border-radius: 16px !important;
       text-transform: uppercase;
       font-size: 0.85rem !important;
+
+      ::ng-deep .mdc-evolution-chip__text-label {
+        color: white !important;
+      }
     }
 
     mat-chip.status-submitted {
-      background: linear-gradient(135deg, #3498db 0%, #2980b9 100%) !important;
-      color: white;
+      background: white !important;
+      color: #000000 !important;
+      border: 2px solid #000000;
       font-weight: 700;
       padding: 8px 16px !important;
       border-radius: 16px !important;
       text-transform: uppercase;
       font-size: 0.85rem !important;
+
+      ::ng-deep .mdc-evolution-chip__text-label {
+        color: #000000 !important;
+      }
     }
 
     mat-chip.status-approved {
-      background: linear-gradient(135deg, #2ecc71 0%, #27ae60 100%) !important;
-      color: white;
+      background: #000000 !important;
+      color: white !important;
       font-weight: 700;
       padding: 8px 16px !important;
       border-radius: 16px !important;
       text-transform: uppercase;
       font-size: 0.85rem !important;
+
+      ::ng-deep .mdc-evolution-chip__text-label {
+        color: white !important;
+      }
     }
 
     mat-chip.status-received {
-      background: linear-gradient(135deg, #1abc9c 0%, #16a085 100%) !important;
-      color: white;
+      background: white !important;
+      color: #000000 !important;
+      border: 2px solid #000000;
       font-weight: 700;
       padding: 8px 16px !important;
       border-radius: 16px !important;
       text-transform: uppercase;
       font-size: 0.85rem !important;
+
+      ::ng-deep .mdc-evolution-chip__text-label {
+        color: #000000 !important;
+      }
     }
 
     mat-chip.status-cancelled {
-      background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%) !important;
-      color: white;
+      background: #000000 !important;
+      color: white !important;
       font-weight: 700;
       padding: 8px 16px !important;
       border-radius: 16px !important;
       text-transform: uppercase;
       font-size: 0.85rem !important;
+
+      ::ng-deep .mdc-evolution-chip__text-label {
+        color: white !important;
+      }
     }
   `]
 })
 export class PurchaseOrderListComponent implements OnInit {
   private readonly purchaseOrderService = inject(PurchaseOrderService);
   private readonly toastr = inject(ToastrService);
+  private readonly cdr = inject(ChangeDetectorRef);
+  private readonly fb = inject(FormBuilder);
 
   purchaseOrders: PurchaseOrder[] = [];
+  allPurchaseOrders: PurchaseOrder[] = [];
   displayedColumns = ['poNumber', 'orderDate', 'supplierName', 'expectedDeliveryDate', 'totalAmount', 'status', 'actions'];
+
+  filterForm: FormGroup = this.fb.group({
+    poNumber: [''],
+    supplierName: [''],
+    status: ['']
+  });
 
   ngOnInit(): void {
     this.loadPurchaseOrders();
@@ -236,13 +332,36 @@ export class PurchaseOrderListComponent implements OnInit {
   loadPurchaseOrders(): void {
     this.purchaseOrderService.getAll().subscribe({
       next: (pos) => {
-        this.purchaseOrders = pos;
+        this.allPurchaseOrders = [...pos];
+        this.applyFilters();
       },
       error: (error) => {
         this.toastr.error('Failed to load purchase orders', 'Error');
         console.error(error);
       }
     });
+  }
+
+  applyFilters(): void {
+    const filters = this.filterForm.value;
+    const poNumber = filters.poNumber?.toLowerCase() || '';
+    const supplierName = filters.supplierName?.toLowerCase() || '';
+    const status = filters.status;
+    
+    this.purchaseOrders = this.allPurchaseOrders.filter(po => {
+      const matchesPONumber = !poNumber || po.poNumber.toLowerCase().includes(poNumber);
+      const matchesSupplier = !supplierName || (po.supplierName && po.supplierName.toLowerCase().includes(supplierName));
+      const matchesStatus = status === '' || status === null || po.status === status;
+      
+      return matchesPONumber && matchesSupplier && matchesStatus;
+    });
+    
+    this.cdr.detectChanges();
+  }
+
+  resetFilters(): void {
+    this.filterForm.reset();
+    this.applyFilters();
   }
 
   createPurchaseOrder(): void {

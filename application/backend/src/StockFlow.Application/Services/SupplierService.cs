@@ -8,17 +8,20 @@ namespace StockFlow.Application.Services;
 
 public class SupplierService : ISupplierService
 {
+    private readonly IUnitOfWork _unitOfWork;
     private readonly IRepository<Supplier> _supplierRepository;
     private readonly IMapper _mapper;
     private readonly IValidator<CreateSupplierDto> _createValidator;
     private readonly IValidator<UpdateSupplierDto> _updateValidator;
 
     public SupplierService(
+        IUnitOfWork unitOfWork,
         IRepository<Supplier> supplierRepository,
         IMapper mapper,
         IValidator<CreateSupplierDto> createValidator,
         IValidator<UpdateSupplierDto> updateValidator)
     {
+        _unitOfWork = unitOfWork;
         _supplierRepository = supplierRepository;
         _mapper = mapper;
         _createValidator = createValidator;
@@ -44,6 +47,7 @@ public class SupplierService : ISupplierService
         var supplier = _mapper.Map<Supplier>(createSupplierDto);
 
         await _supplierRepository.AddAsync(supplier, cancellationToken);
+        await _unitOfWork.SaveChangesAsync(cancellationToken);
 
         return _mapper.Map<SupplierDto>(supplier);
     }
@@ -60,6 +64,7 @@ public class SupplierService : ISupplierService
         _mapper.Map(updateSupplierDto, supplier);
 
         await _supplierRepository.UpdateAsync(supplier, cancellationToken);
+        await _unitOfWork.SaveChangesAsync(cancellationToken);
 
         return _mapper.Map<SupplierDto>(supplier);
     }
@@ -72,6 +77,7 @@ public class SupplierService : ISupplierService
             return false;
 
         await _supplierRepository.DeleteAsync(supplier, cancellationToken);
+        await _unitOfWork.SaveChangesAsync(cancellationToken);
 
         return true;
     }

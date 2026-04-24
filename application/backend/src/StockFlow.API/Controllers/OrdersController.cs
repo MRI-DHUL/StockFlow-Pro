@@ -84,4 +84,20 @@ public class OrdersController : ControllerBase
 
         return Ok(order);
     }
+
+    /// <summary>
+    /// Delete an order
+    /// </summary>
+    [HttpDelete("{id}")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> Delete(Guid id)
+    {
+        var success = await _orderService.DeleteAsync(id);
+        
+        if (!success)
+            return NotFound(new { message = $"Order with ID {id} not found." });
+
+        return NoContent();
+    }
 }

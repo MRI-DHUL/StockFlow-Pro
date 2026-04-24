@@ -6,5 +6,6 @@ public interface IStockMovementService
 {
     Task<IEnumerable<StockMovementDto>> GetAllAsync(CancellationToken cancellationToken = default);
     Task<StockMovementDto?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default);
+    Task<IEnumerable<StockMovementDto>> GetByProductIdAsync(Guid productId, CancellationToken cancellationToken = default);
     Task<StockMovementDto> CreateAsync(CreateStockMovementDto createStockMovementDto, CancellationToken cancellationToken = default);
 }

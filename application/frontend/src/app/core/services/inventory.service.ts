@@ -6,8 +6,8 @@ import { InventoryItem, UpdateInventoryDto } from '../../shared/models/domain.mo
 import { PagedResponse } from '../models/auth.models';
 
 export interface InventoryFilters {
-  productId?: number;
-  warehouseId?: number;
+  productId?: string;
+  warehouseId?: string;
   minQuantity?: number;
   maxQuantity?: number;
   pageNumber?: number;
@@ -44,11 +44,15 @@ export class InventoryService {
     return this.http.get<PagedResponse<InventoryItem>>(`${this.apiUrl}/paged`, { params });
   }
 
-  getById(id: number): Observable<InventoryItem> {
+  getById(id: string): Observable<InventoryItem> {
     return this.http.get<InventoryItem>(`${this.apiUrl}/${id}`);
   }
 
-  update(id: number, inventory: UpdateInventoryDto): Observable<InventoryItem> {
+  create(inventory: { productId: string; warehouseId: string; quantity: number; threshold: number }): Observable<InventoryItem> {
+    return this.http.post<InventoryItem>(this.apiUrl, inventory);
+  }
+
+  update(id: string, inventory: UpdateInventoryDto): Observable<InventoryItem> {
     return this.http.put<InventoryItem>(`${this.apiUrl}/${id}`, inventory);
   }
 

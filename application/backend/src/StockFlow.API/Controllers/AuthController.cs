@@ -47,6 +47,7 @@ public class AuthController : ControllerBase
     /// Refresh access token using refresh token
     /// </summary>
     [HttpPost("refresh-token")]
+    [HttpPost("refresh")] // Alias for frontend compatibility
     [ProducesResponseType(typeof(AuthResponseDto), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     public async Task<ActionResult<AuthResponseDto>> RefreshToken([FromBody] string refreshToken)

@@ -1,4 +1,4 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, OnInit, inject, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { MatTableModule } from '@angular/material/table';
@@ -221,9 +221,8 @@ import { CurrencyFormatterPipe } from '../../../shared/pipes/currency-formatter.
       background: white;
 
       th {
-        background: white;
-        border-bottom: 2px solid black;
-        color: black !important;
+        background: #000000;
+        color: white !important;
         font-weight: 700;
         font-size: 0.95rem;
         text-transform: uppercase;
@@ -247,53 +246,75 @@ import { CurrencyFormatterPipe } from '../../../shared/pipes/currency-formatter.
     }
 
     mat-chip.status-pending {
-      background: linear-gradient(135deg, #f39c12 0%, #e67e22 100%) !important;
-      color: white;
+      background: #000000 !important;
+      color: white !important;
       font-weight: 700;
       padding: 8px 16px !important;
       border-radius: 16px !important;
       text-transform: uppercase;
       font-size: 0.85rem !important;
+
+      ::ng-deep .mdc-evolution-chip__text-label {
+        color: white !important;
+      }
     }
 
     mat-chip.status-confirmed {
-      background: linear-gradient(135deg, #3498db 0%, #2980b9 100%) !important;
-      color: white;
+      background: white !important;
+      color: #000000 !important;
+      border: 2px solid #000000;
       font-weight: 700;
       padding: 8px 16px !important;
       border-radius: 16px !important;
       text-transform: uppercase;
       font-size: 0.85rem !important;
+
+      ::ng-deep .mdc-evolution-chip__text-label {
+        color: #000000 !important;
+      }
     }
 
     mat-chip.status-shipped {
-      background: linear-gradient(135deg, #9b59b6 0%, #8e44ad 100%) !important;
-      color: white;
+      background: #000000 !important;
+      color: white !important;
       font-weight: 700;
       padding: 8px 16px !important;
       border-radius: 16px !important;
       text-transform: uppercase;
       font-size: 0.85rem !important;
+
+      ::ng-deep .mdc-evolution-chip__text-label {
+        color: white !important;
+      }
     }
 
     mat-chip.status-delivered {
-      background: linear-gradient(135deg, #2ecc71 0%, #27ae60 100%) !important;
-      color: white;
+      background: white !important;
+      color: #000000 !important;
+      border: 2px solid #000000;
       font-weight: 700;
       padding: 8px 16px !important;
       border-radius: 16px !important;
       text-transform: uppercase;
       font-size: 0.85rem !important;
+
+      ::ng-deep .mdc-evolution-chip__text-label {
+        color: #000000 !important;
+      }
     }
 
     mat-chip.status-cancelled {
-      background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%) !important;
-      color: white;
+      background: #000000 !important;
+      color: white !important;
       font-weight: 700;
       padding: 8px 16px !important;
       border-radius: 16px !important;
       text-transform: uppercase;
       font-size: 0.85rem !important;
+
+      ::ng-deep .mdc-evolution-chip__text-label {
+        color: white !important;
+      }
     }
   `]
 })
@@ -301,6 +322,7 @@ export class OrderListComponent implements OnInit {
   private readonly orderService = inject(OrderService);
   private readonly toastr = inject(ToastrService);
   private readonly fb = inject(FormBuilder);
+  private readonly cdr = inject(ChangeDetectorRef);
 
   orders: Order[] = [];
   totalCount = 0;
@@ -336,8 +358,9 @@ export class OrderListComponent implements OnInit {
 
     this.orderService.getPaged(filters).subscribe({
       next: (response: PagedResponse<Order>) => {
-        this.orders = response.items;
+        this.orders = [...response.items];
         this.totalCount = response.totalCount;
+        this.cdr.detectChanges();
       },
       error: (error) => {
         this.toastr.error('Failed to load orders', 'Error');

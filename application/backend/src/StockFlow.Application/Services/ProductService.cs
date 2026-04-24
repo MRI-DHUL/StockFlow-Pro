@@ -154,4 +154,16 @@ public class ProductService : IProductService
 
         return true;
     }
+
+    public async Task<IEnumerable<string>> GetCategoriesAsync(CancellationToken cancellationToken = default)
+    {
+        var categories = await _productRepository.Query()
+            .Where(p => p.Category != null)
+            .Select(p => p.Category!)
+            .Distinct()
+            .OrderBy(c => c)
+            .ToListAsync(cancellationToken);
+
+        return categories;
+    }
 }

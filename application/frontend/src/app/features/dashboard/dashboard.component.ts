@@ -1,4 +1,4 @@
-import { Component, inject, OnInit } from '@angular/core';
+import { Component, inject, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterModule } from '@angular/router';
 import { MatCardModule } from '@angular/material/card';
@@ -253,19 +253,21 @@ import { WarehouseService } from '../../core/services/warehouse.service';
     }
 
     .products-card .card-icon-wrapper {
-      background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%);
+      background: #000000;
     }
 
     .warehouses-card .card-icon-wrapper {
-      background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%);
+      background: white;
+      border: 2px solid #000000;
     }
 
     .low-stock-card .card-icon-wrapper {
-      background: linear-gradient(135deg, #fed7aa 0%, #fdba74 100%);
+      background: #000000;
     }
 
     .orders-card .card-icon-wrapper {
-      background: linear-gradient(135deg, #e9d5ff 0%, #d8b4fe 100%);
+      background: white;
+      border: 2px solid #000000;
     }
 
     .card-icon {
@@ -274,10 +276,10 @@ import { WarehouseService } from '../../core/services/warehouse.service';
       height: 32px;
     }
 
-    .products-card .card-icon { color: #2563eb; }
-    .warehouses-card .card-icon { color: #059669; }
-    .low-stock-card .card-icon { color: #d97706; }
-    .orders-card .card-icon { color: #7c3aed; }
+    .products-card .card-icon { color: white !important; }
+    .warehouses-card .card-icon { color: #000000; }
+    .low-stock-card .card-icon { color: white !important; }
+    .orders-card .card-icon { color: #000000; }
 
     .card-content {
       flex: 1;
@@ -317,18 +319,20 @@ import { WarehouseService } from '../../core/services/warehouse.service';
     }
 
     .card-trend.positive {
-      color: #059669;
-      background: #d1fae5;
+      color: #000000;
+      background: white;
+      border: 2px solid #000000;
     }
 
     .card-trend.neutral {
-      color: #6b7280;
-      background: #f3f4f6;
+      color: white !important;
+      background: #000000;
     }
 
     .card-trend.negative {
-      color: #dc2626;
-      background: #fee2e2;
+      color: #000000;
+      background: white;
+      border: 2px solid #000000;
     }
 
     .dashboard-grid {
@@ -425,7 +429,7 @@ import { WarehouseService } from '../../core/services/warehouse.service';
     }
 
     .notification-item:hover {
-      background: #f9fafb;
+      background: #fafafa;
     }
 
     .notification-icon {
@@ -444,18 +448,19 @@ import { WarehouseService } from '../../core/services/warehouse.service';
       }
 
       &.info {
-        background: #dbeafe;
-        color: #2563eb;
+        background: #000000;
+        color: white !important;
       }
 
       &.success {
-        background: #d1fae5;
-        color: #059669;
+        background: white;
+        color: #000000;
+        border: 2px solid #000000;
       }
 
       &.warning {
-        background: #fed7aa;
-        color: #d97706;
+        background: #000000;
+        color: white !important;
       }
 
       &.error {
@@ -541,6 +546,7 @@ export class DashboardComponent implements OnInit {
   private readonly orderService = inject(OrderService);
   private readonly warehouseService = inject(WarehouseService);
   private readonly toastr = inject(ToastrService);
+  private readonly cdr = inject(ChangeDetectorRef);
 
   currentUser = this.authService.currentUser;
   notifications: PusherNotification[] = [];
@@ -567,6 +573,7 @@ export class DashboardComponent implements OnInit {
     this.productService.getPaged({ pageSize: 1, pageNumber: 1 }).subscribe({
       next: (response) => {
         this.stats.totalProducts = response.totalCount;
+        this.cdr.detectChanges();
       },
       error: (error) => console.error('Failed to load products stats', error)
     });
@@ -575,6 +582,7 @@ export class DashboardComponent implements OnInit {
     this.warehouseService.getAll().subscribe({
       next: (warehouses) => {
         this.stats.totalWarehouses = warehouses.length;
+        this.cdr.detectChanges();
       },
       error: (error) => console.error('Failed to load warehouses stats', error)
     });
@@ -583,6 +591,7 @@ export class DashboardComponent implements OnInit {
     this.inventoryService.getLowStock().subscribe({
       next: (items) => {
         this.stats.lowStockItems = items.length;
+        this.cdr.detectChanges();
       },
       error: (error) => console.error('Failed to load low stock stats', error)
     });
@@ -591,6 +600,7 @@ export class DashboardComponent implements OnInit {
     this.orderService.getPaged({ status: 0, pageSize: 1, pageNumber: 1 }).subscribe({
       next: (response) => {
         this.stats.pendingOrders = response.totalCount;
+        this.cdr.detectChanges();
       },
       error: (error) => console.error('Failed to load orders stats', error)
     });

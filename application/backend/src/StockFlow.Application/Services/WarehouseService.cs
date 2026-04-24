@@ -8,17 +8,20 @@ namespace StockFlow.Application.Services;
 
 public class WarehouseService : IWarehouseService
 {
+    private readonly IUnitOfWork _unitOfWork;
     private readonly IRepository<Warehouse> _warehouseRepository;
     private readonly IMapper _mapper;
     private readonly IValidator<CreateWarehouseDto> _createValidator;
     private readonly IValidator<UpdateWarehouseDto> _updateValidator;
 
     public WarehouseService(
+        IUnitOfWork unitOfWork,
         IRepository<Warehouse> warehouseRepository,
         IMapper mapper,
         IValidator<CreateWarehouseDto> createValidator,
         IValidator<UpdateWarehouseDto> updateValidator)
     {
+        _unitOfWork = unitOfWork;
         _warehouseRepository = warehouseRepository;
         _mapper = mapper;
         _createValidator = createValidator;
@@ -44,6 +47,7 @@ public class WarehouseService : IWarehouseService
         var warehouse = _mapper.Map<Warehouse>(createWarehouseDto);
 
         await _warehouseRepository.AddAsync(warehouse, cancellationToken);
+        await _unitOfWork.SaveChangesAsync(cancellationToken);
 
         return _mapper.Map<WarehouseDto>(warehouse);
     }
@@ -60,6 +64,7 @@ public class WarehouseService : IWarehouseService
         _mapper.Map(updateWarehouseDto, warehouse);
 
         await _warehouseRepository.UpdateAsync(warehouse, cancellationToken);
+        await _unitOfWork.SaveChangesAsync(cancellationToken);
 
         return _mapper.Map<WarehouseDto>(warehouse);
     }
@@ -72,6 +77,7 @@ public class WarehouseService : IWarehouseService
             return false;
 
         await _warehouseRepository.DeleteAsync(warehouse, cancellationToken);
+        await _unitOfWork.SaveChangesAsync(cancellationToken);
 
         return true;
     }

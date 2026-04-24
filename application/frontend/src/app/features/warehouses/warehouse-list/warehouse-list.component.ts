@@ -1,4 +1,4 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, OnInit, inject, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MatTableModule } from '@angular/material/table';
 import { MatButtonModule } from '@angular/material/button';
@@ -46,16 +46,7 @@ import { WarehouseFormComponent } from '../warehouse-form/warehouse-form.compone
 
             <ng-container matColumnDef="capacity">
               <th mat-header-cell *matHeaderCellDef>Capacity</th>
-              <td mat-cell *matCellDef="let warehouse">{{ warehouse.capacity }}</td>
-            </ng-container>
-
-            <ng-container matColumnDef="isActive">
-              <th mat-header-cell *matHeaderCellDef>Status</th>
-              <td mat-cell *matCellDef="let warehouse">
-                <span [class]="warehouse.isActive ? 'status-active' : 'status-inactive'">
-                  {{ warehouse.isActive ? 'Active' : 'Inactive' }}
-                </span>
-              </td>
+              <td mat-cell *matCellDef="let warehouse">{{ warehouse.capacity | number }}</td>
             </ng-container>
 
             <ng-container matColumnDef="actions">
@@ -139,9 +130,8 @@ import { WarehouseFormComponent } from '../warehouse-form/warehouse-form.compone
       background: white;
 
       th {
-        background: white;
-        border-bottom: 2px solid black;
-        color: black !important;
+        background: #000000;
+        color: white !important;
         font-weight: 700;
         font-size: 0.95rem;
         text-transform: uppercase;
@@ -165,9 +155,10 @@ import { WarehouseFormComponent } from '../warehouse-form/warehouse-form.compone
     }
 
     .status-active {
-      color: #27ae60;
+      color: #000000;
       font-weight: 700;
-      background: rgba(46, 204, 113, 0.1);
+      background: white;
+      border: 2px solid #000000;
       padding: 6px 14px;
       border-radius: 16px;
       text-transform: uppercase;
@@ -176,9 +167,9 @@ import { WarehouseFormComponent } from '../warehouse-form/warehouse-form.compone
     }
 
     .status-inactive {
-      color: #e74c3c;
+      color: white !important;
       font-weight: 700;
-      background: rgba(231, 76, 60, 0.1);
+      background: #000000;
       padding: 6px 14px;
       border-radius: 16px;
       text-transform: uppercase;
@@ -191,9 +182,10 @@ export class WarehouseListComponent implements OnInit {
   private readonly warehouseService = inject(WarehouseService);
   private readonly dialog = inject(MatDialog);
   private readonly toastr = inject(ToastrService);
+  private readonly cdr = inject(ChangeDetectorRef);
 
   warehouses: Warehouse[] = [];
-  displayedColumns = ['name', 'location', 'capacity', 'isActive', 'actions'];
+  displayedColumns = ['name', 'location', 'capacity', 'actions'];
 
   ngOnInit(): void {
     this.loadWarehouses();
@@ -202,7 +194,8 @@ export class WarehouseListComponent implements OnInit {
   loadWarehouses(): void {
     this.warehouseService.getAll().subscribe({
       next: (warehouses) => {
-        this.warehouses = warehouses;
+        this.warehouses = [...warehouses];
+        this.cdr.detectChanges();
       },
       error: (error) => {
         this.toastr.error('Failed to load warehouses', 'Error');

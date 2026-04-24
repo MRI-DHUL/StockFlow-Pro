@@ -71,4 +71,20 @@ public class PurchaseOrdersController : ControllerBase
 
         return Ok(purchaseOrder);
     }
+
+    /// <summary>
+    /// Delete a purchase order
+    /// </summary>
+    [HttpDelete("{id}")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> Delete(Guid id)
+    {
+        var success = await _purchaseOrderService.DeleteAsync(id);
+        
+        if (!success)
+            return NotFound(new { message = $"Purchase order with ID {id} not found." });
+
+        return NoContent();
+    }
 }

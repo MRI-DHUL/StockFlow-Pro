@@ -26,12 +26,14 @@ public class AuditLogService : IAuditLogService
 
         if (!string.IsNullOrWhiteSpace(filterParams.EntityName))
         {
-            query = query.Where(a => a.EntityName.Contains(filterParams.EntityName));
+            var entityName = filterParams.EntityName.ToLower();
+            query = query.Where(a => a.EntityName.ToLower().Contains(entityName));
         }
 
         if (!string.IsNullOrWhiteSpace(filterParams.Action))
         {
-            query = query.Where(a => a.Action == filterParams.Action);
+            var action = filterParams.Action.ToLower();
+            query = query.Where(a => a.Action.ToLower().Contains(action));
         }
 
         if (filterParams.StartDate.HasValue)
@@ -83,5 +85,55 @@ public class AuditLogService : IAuditLogService
     {
         var auditLog = await _auditLogRepository.GetByIdAsync(id, cancellationToken);
         return auditLog?.Adapt<AuditLogDto>();
+    }
+
+    public async Task<IEnumerable<AuditLogDto>> GetAllAsync(AuditLogFilterParams filterParams, CancellationToken cancellationToken = default)
+    {
+        var query = _auditLogRepository.Query();
+
+        // Apply filters
+        if (!string.IsNullOrWhiteSpace(filterParams.UserId))
+        {
+            query = query.Where(a => a.UserId == filterParams.UserId);
+        }
+
+        if (!string.IsNullOrWhiteSpace(filterParams.EntityName))
+        {
+            var entityName = filterParams.EntityName.ToLower();
+            query = query.Where(a => a.EntityName.ToLower().Contains(entityName));
+        }
+
+        if (!string.IsNullOrWhiteSpace(filterParams.Action))
+        {
+            var action = filterParams.Action.ToLower();
+            query = query.Where(a => a.Action.ToLower().Contains(action));
+        }
+
+        if (filterParams.StartDate.HasValue)
+        {
+            query = query.Where(a => a.Timestamp >= filterParams.StartDate.Value);
+        }
+
+        if (filterParams.EndDate.HasValue)
+        {
+            query = query.Where(a => a.Timestamp <= filterParams.EndDate.Value);
+        }
+
+        // Apply sorting
+        query = query.OrderByDescending(a => a.Timestamp);
+
+        var auditLogs = await query.ToListAsync(cancellationToken);
+        return auditLogs.Adapt<List<AuditLogDto>>();
+    }
+
+    public async Task<IEnumerable<AuditLogDto>> GetByEntityAsync(string entityName, Guid entityId, CancellationToken cancellationToken = default)
+    {
+        var entityNameLower = entityName.ToLower();
+        var auditLogs = await _auditLogRepository.Query()
+            .Where(a => a.EntityName.ToLower() == entityNameLower && a.EntityId == entityId.ToString())
+            .OrderByDescending(a => a.Timestamp)
+            .ToListAsync(cancellationToken);
+
+        return auditLogs.Adapt<List<AuditLogDto>>();
     }
 }

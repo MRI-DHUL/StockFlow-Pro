@@ -1,14 +1,11 @@
 // Product Models
 export interface Product {
-  id: number;
+  id: string;
   name: string;
   sku: string;
   description?: string;
   category: string;
   unitPrice: number;
-  reorderLevel: number;
-  quantityPerUnit: string;
-  isActive: boolean;
   createdAt: Date;
   updatedAt?: Date;
 }
@@ -19,8 +16,6 @@ export interface CreateProductDto {
   description?: string;
   category: string;
   unitPrice: number;
-  reorderLevel: number;
-  quantityPerUnit: string;
 }
 
 export interface UpdateProductDto {
@@ -28,27 +23,25 @@ export interface UpdateProductDto {
   description?: string;
   category: string;
   unitPrice: number;
-  reorderLevel: number;
-  quantityPerUnit: string;
-  isActive: boolean;
 }
 
 // Inventory Models
 export interface InventoryItem {
-  id: number;
-  productId: number;
+  id: string;
+  productId: string;
   productName: string;
-  warehouseId: number;
+  warehouseId: string;
   warehouseName: string;
-  quantityOnHand: number;
-  quantityReserved: number;
-  quantityAvailable: number;
+  quantity: number;
+  threshold: number;
   lastUpdated: Date;
 }
 
 export interface UpdateInventoryDto {
-  quantityOnHand: number;
-  quantityReserved: number;
+  productId: string;
+  warehouseId: string;
+  quantity: number;
+  threshold: number;
 }
 
 // Order Models
@@ -61,28 +54,25 @@ export enum OrderStatus {
 }
 
 export interface Order {
-  id: number;
+  id: string;
   orderNumber: string;
-  orderDate: Date;
   customerId?: string;
   customerName?: string;
   status: OrderStatus;
   totalAmount: number;
-  shippingAddress?: string;
-  notes?: string;
   createdAt: Date;
   updatedAt?: Date;
-  orderItems: OrderItem[];
+  orderItems?: OrderItem[];
 }
 
 export interface OrderItem {
-  id: number;
-  orderId: number;
-  productId: number;
-  productName: string;
+  id: string;
+  orderId: string;
+  productId: string;
+  productName?: string;
   quantity: number;
   unitPrice: number;
-  totalPrice: number;
+  subtotal: number;
 }
 
 export interface CreateOrderDto {
@@ -94,9 +84,8 @@ export interface CreateOrderDto {
 }
 
 export interface CreateOrderItemDto {
-  productId: number;
+  productId: string;
   quantity: number;
-  unitPrice: number;
 }
 
 export interface UpdateOrderDto {
@@ -115,39 +104,36 @@ export enum PurchaseOrderStatus {
 }
 
 export interface PurchaseOrder {
-  id: number;
+  id: string;
   poNumber: string;
-  supplierId: number;
+  supplierId: string;
   supplierName: string;
-  orderDate: Date;
   expectedDeliveryDate?: Date;
   status: PurchaseOrderStatus;
   totalAmount: number;
-  notes?: string;
   createdAt: Date;
   updatedAt?: Date;
-  items: PurchaseOrderItem[];
+  purchaseOrderItems?: PurchaseOrderItem[];
 }
 
 export interface PurchaseOrderItem {
-  id: number;
-  purchaseOrderId: number;
-  productId: number;
-  productName: string;
+  id: string;
+  purchaseOrderId: string;
+  productId: string;
+  productName?: string;
   quantity: number;
   unitPrice: number;
-  totalPrice: number;
+  subtotal: number;
 }
 
 export interface CreatePurchaseOrderDto {
-  supplierId: number;
+  supplierId: string;
   expectedDeliveryDate?: Date;
-  notes?: string;
-  items: CreatePurchaseOrderItemDto[];
+  purchaseOrderItems: CreatePurchaseOrderItemDto[];
 }
 
 export interface CreatePurchaseOrderItemDto {
-  productId: number;
+  productId: string;
   quantity: number;
   unitPrice: number;
 }
@@ -160,28 +146,28 @@ export interface UpdatePurchaseOrderDto {
 
 // Supplier Models
 export interface Supplier {
-  id: number;
+  id: string;
   name: string;
-  contactName: string;
-  email: string;
-  phone: string;
-  address: string;
-  isActive: boolean;
+  contactInfo?: string;
+  email?: string;
+  phone?: string;
+  leadTimeDays?: number;
   createdAt: Date;
   updatedAt?: Date;
 }
 
 export interface CreateSupplierDto {
   name: string;
-  contactName: string;
+  contactPerson: string;
   email: string;
   phone: string;
   address: string;
+  isActive: boolean;
 }
 
 export interface UpdateSupplierDto {
   name: string;
-  contactName: string;
+  contactPerson: string;
   email: string;
   phone: string;
   address: string;
@@ -190,11 +176,13 @@ export interface UpdateSupplierDto {
 
 // Warehouse Models
 export interface Warehouse {
-  id: number;
+  id: string;
   name: string;
   location: string;
   capacity: number;
-  isActive: boolean;
+  contactInfo?: string;
+  email?: string;
+  phone?: string;
   createdAt: Date;
   updatedAt?: Date;
 }
@@ -209,7 +197,6 @@ export interface UpdateWarehouseDto {
   name: string;
   location: string;
   capacity: number;
-  isActive: boolean;
 }
 
 // Stock Movement Models
@@ -221,23 +208,26 @@ export enum MovementType {
 }
 
 export interface StockMovement {
-  id: number;
-  productId: number;
-  productName: string;
-  warehouseId: number;
-  warehouseName: string;
-  movementType: MovementType;
+  id: string;
+  productId: string;
+  productName?: string;
+  fromWarehouseId?: string;
+  fromWarehouseName?: string;
+  toWarehouseId?: string;
+  toWarehouseName?: string;
+  type: MovementType;
   quantity: number;
   referenceNumber?: string;
   notes?: string;
   movementDate: Date;
-  createdBy?: string;
+  performedBy?: string;
 }
 
 export interface CreateStockMovementDto {
-  productId: number;
-  warehouseId: number;
-  movementType: MovementType;
+  productId: string;
+  fromWarehouseId?: string;
+  toWarehouseId?: string;
+  type: MovementType;
   quantity: number;
   referenceNumber?: string;
   notes?: string;
@@ -245,12 +235,13 @@ export interface CreateStockMovementDto {
 
 // Audit Log Models
 export interface AuditLog {
-  id: number;
+  id: string;
   entityName: string;
   entityId: string;
   action: string;
-  performedBy?: string;
+  userName?: string;
   timestamp: Date;
-  changes?: string;
+  oldValues?: string;
+  newValues?: string;
   ipAddress?: string;
 }

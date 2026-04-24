@@ -49,6 +49,19 @@ public class StockMovementService : IStockMovementService
         return movement != null ? _mapper.Map<StockMovementDto>(movement) : null;
     }
 
+    public async Task<IEnumerable<StockMovementDto>> GetByProductIdAsync(Guid productId, CancellationToken cancellationToken = default)
+    {
+        var movements = await _stockMovementRepository.Query()
+            .Include(sm => sm.Product)
+            .Include(sm => sm.FromWarehouse)
+            .Include(sm => sm.ToWarehouse)
+            .Where(sm => sm.ProductId == productId)
+            .OrderByDescending(sm => sm.CreatedAt)
+            .ToListAsync(cancellationToken);
+
+        return _mapper.Map<List<StockMovementDto>>(movements);
+    }
+
     public async Task<StockMovementDto> CreateAsync(CreateStockMovementDto createStockMovementDto, CancellationToken cancellationToken = default)
     {
         await _createValidator.ValidateAndThrowAsync(createStockMovementDto, cancellationToken);
