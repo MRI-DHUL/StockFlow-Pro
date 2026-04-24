@@ -10,7 +10,7 @@ using HealthChecks.UI.Client;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Asp.Versioning;
 using Hangfire;
-using Hangfire.SqlServer;
+using Hangfire.PostgreSql;
 using Serilog;
 using System.Threading.RateLimiting;
 using Microsoft.AspNetCore.RateLimiting;
@@ -53,19 +53,13 @@ try
     // Add Infrastructure services (DbContext, Repositories, Identity, JWT)
     builder.Services.AddInfrastructure(builder.Configuration);
 
-    // Add Hangfire
+    // Add Hangfire with PostgreSQL
     builder.Services.AddHangfire(config => config
         .SetDataCompatibilityLevel(CompatibilityLevel.Version_180)
         .UseSimpleAssemblyNameTypeSerializer()
         .UseRecommendedSerializerSettings()
-        .UseSqlServerStorage(builder.Configuration.GetConnectionString("DefaultConnection"), new SqlServerStorageOptions
-        {
-            CommandBatchMaxTimeout = TimeSpan.FromMinutes(5),
-            SlidingInvisibilityTimeout = TimeSpan.FromMinutes(5),
-            QueuePollInterval = TimeSpan.Zero,
-            UseRecommendedIsolationLevel = true,
-            DisableGlobalLocks = true
-        }));
+        .UsePostgreSqlStorage(options => 
+            options.UseNpgsqlConnection(builder.Configuration.GetConnectionString("DefaultConnection"))));
 
     builder.Services.AddHangfireServer(options =>
     {
@@ -179,11 +173,11 @@ try
     var redisConnection = builder.Configuration.GetConnectionString("Redis");
     
     builder.Services.AddHealthChecks()
-        .AddSqlServer(
+        .AddNpgSql(
             connectionString: builder.Configuration.GetConnectionString("DefaultConnection")!,
-            name: "sqlserver",
+            name: "postgresql",
             failureStatus: HealthStatus.Unhealthy,
-            tags: new[] { "db", "sql", "sqlserver" })
+            tags: new[] { "db", "postgresql", "database" })
         .AddCheck<HangfireHealthCheck>(
             "hangfire",
             failureStatus: HealthStatus.Degraded,
