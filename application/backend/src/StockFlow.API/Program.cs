@@ -37,7 +37,7 @@ try
     {
         options.AddPolicy("AllowAll", policy =>
         {
-            policy.AllowAnyOrigin()
+            policy.WithOrigins("https://stockflow-pro.infinityfreeapp.com")
                   .AllowAnyMethod()
                   .AllowAnyHeader();
         });
