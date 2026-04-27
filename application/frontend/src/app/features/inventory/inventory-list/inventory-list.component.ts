@@ -1,4 +1,4 @@
-import { Component, OnInit, inject, ChangeDetectorRef } from '@angular/core';
+﻿import { Component, OnInit, inject, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { MatTableModule } from '@angular/material/table';
@@ -36,217 +36,6 @@ import { InventoryFormComponent } from '../inventory-form/inventory-form.compone
   ],
   templateUrl: './inventory-list.component.html',
   styleUrls: ['./inventory-list.component.scss']
-})
-export class InventoryListComponent implements OnInit {
-          <form [formGroup]="filterForm" class="filters-form">
-            <mat-form-field appearance="outline">
-              <mat-label>Warehouse</mat-label>
-              <mat-select formControlName="warehouseId">
-                <mat-option value="">All Warehouses</mat-option>
-                <mat-option *ngFor="let warehouse of warehouses" [value]="warehouse.id">
-                  {{ warehouse.name }}
-                </mat-option>
-              </mat-select>
-            </mat-form-field>
-
-            <button mat-raised-button color="primary" (click)="applyFilters()">
-              <mat-icon>filter_list</mat-icon>
-              Apply Filters
-            </button>
-            <button mat-button (click)="resetFilters()">Reset</button>
-          </form>
-        </div>
-
-        <!-- Table -->
-        <div class="table-container">
-          <div class="no-data-container" *ngIf="inventory.length === 0">
-            <div class="no-data-message">No Data Found</div>
-          </div>
-          <table mat-table [dataSource]="inventory" class="mat-elevation-z2" *ngIf="inventory.length > 0">
-            <ng-container matColumnDef="productName">
-              <th mat-header-cell *matHeaderCellDef>Product</th>
-              <td mat-cell *matCellDef="let item">{{ item.productName }}</td>
-            </ng-container>
-
-            <ng-container matColumnDef="warehouseName">
-              <th mat-header-cell *matHeaderCellDef>Warehouse</th>
-              <td mat-cell *matCellDef="let item">{{ item.warehouseName }}</td>
-            </ng-container>
-
-            <ng-container matColumnDef="quantity">
-              <th mat-header-cell *matHeaderCellDef>Quantity</th>
-              <td mat-cell *matCellDef="let item">
-                <span [class]="item.isLowStock ? 'low-stock' : ''">
-                  {{ item.quantity }}
-                </span>
-              </td>
-            </ng-container>
-
-            <ng-container matColumnDef="threshold">
-              <th mat-header-cell *matHeaderCellDef>Threshold</th>
-              <td mat-cell *matCellDef="let item">{{ item.threshold }}</td>
-            </ng-container>
-
-            <ng-container matColumnDef="actions">
-              <th mat-header-cell *matHeaderCellDef>Actions</th>
-              <td mat-cell *matCellDef="let item">
-                <button mat-icon-button color="primary" (click)="openInventoryDialog(item)">
-                  <mat-icon>edit</mat-icon>
-                </button>
-              </td>
-            </ng-container>
-
-            <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
-            <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
-          </table>
-        </div>
-
-        <!-- Pagination -->
-        <app-pagination
-          [totalCount]="totalCount"
-          [pageSize]="pageSize"
-          [pageNumber]="pageNumber"
-          (pageChange)="onPageChange($event)">
-})export class InventoryListComponent implements OnInit {
-  private readonly inventoryService = inject(InventoryService);
-  private readonly warehouseService = inject(WarehouseService);
-  private readonly dialog = inject(MatDialog);
-  private readonly toastr = inject(ToastrService);
-  private readonly fb = inject(FormBuilder);
-  private readonly cdr = inject(ChangeDetectorRef);
-
-  inventory: InventoryItem[] = [];
-  warehouses: any[] = [];
-  totalCount = 0;
-  pageSize = 10;
-  pageNumber = 1;
-  displayedColumns = ['productName', 'warehouseName', 'quantity', 'threshold', 'actions'];
-
-  filterForm: FormGroup = this.fb.group({
-    warehouseId: ['']
-  });
-
-  ngOnInit(): void {
-    this.loadInventory();
-    this.loadWarehouses();
-      border-radius: 16px;
-      box-shadow: 0 8px 16px rgba(0,0,0,0.1);
-      margin: 24px;
-      background: white;
-      animation: fadeIn 0.4s ease-out;
-    }
-
-    @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(10px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
-
-    mat-card-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      background: white;
-      border-bottom: 2px solid black;
-      color: black;
-      padding: 24px;
-      margin: -16px -16px 24px -16px;
-      border-radius: 16px 16px 0 0;
-
-      mat-card-title {
-        font-size: 1.8rem;
-        font-weight: 600;
-        margin: 0;
-        color: black !important;
-      }
-
-      button {
-        background: black !important;
-        color: white !important;
-        border-radius: 8px;
-        font-weight: 600;
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.2);
-
-        mat-icon {
-          color: white;
-        }
-      }
-    }
-
-    .filters-container {
-      background: white;
-      padding: 20px;
-      border-radius: 12px;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-      margin-bottom: 24px;
-    }
-
-    .filters-form {
-      display: flex;
-      gap: 16px;
-      flex-wrap: wrap;
-      align-items: center;
-
-      mat-form-field {
-        min-width: 250px;
-        flex: 1;
-      }
-
-      button {
-        border-radius: 8px;
-        font-weight: 600;
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
-      }
-    }
-
-    .table-container {
-      overflow-x: auto;
-      margin: 20px 0;
-      border-radius: 12px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.08);
-    }
-
-    table {
-      width: 100%;
-      background: white;
-
-      th {
-        background: #000000;
-        color: white !important;
-        font-weight: 700;
-        font-size: 0.95rem;
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
-        padding: 16px !important;
-      }
-
-      td {
-        padding: 14px !important;
-        font-size: 0.95rem;
-        color: black !important;
-      }
-
-      tr {
-        // No hover effect
-      }
-
-      mat-icon {
-        // No hover effect
-      }
-    }
-
-    .low-stock {
-      color: white !important;
-      font-weight: 700;
-      background: #000000;
-      border: 2px solid #000000;
-      padding: 4px 12px;
-      border-radius: 12px;
-      display: inline-block;
-    }
-  `]
 })
 export class InventoryListComponent implements OnInit {
   private readonly inventoryService = inject(InventoryService);
@@ -308,6 +97,19 @@ export class InventoryListComponent implements OnInit {
     });
   }
 
+  openInventoryDialog(item?: InventoryItem): void {
+    const dialogRef = this.dialog.open(InventoryFormComponent, {
+      width: '500px',
+      data: item
+    });
+
+    dialogRef.afterClosed().subscribe(result => {
+      if (result) {
+        this.loadInventory();
+      }
+    });
+  }
+
   applyFilters(): void {
     this.pageNumber = 1;
     this.loadInventory();
@@ -323,18 +125,5 @@ export class InventoryListComponent implements OnInit {
     this.pageNumber = event.pageNumber;
     this.pageSize = event.pageSize;
     this.loadInventory();
-  }
-
-  openInventoryDialog(item?: InventoryItem): void {
-    const dialogRef = this.dialog.open(InventoryFormComponent, {
-      width: '500px',
-      data: item
-    });
-
-    dialogRef.afterClosed().subscribe(result => {
-      if (result) {
-        this.loadInventory();
-      }
-    });
   }
 }

@@ -130,37 +130,3 @@
     </mat-card>
   </div>
 </div>
-                  <strong>{{ notification.title }}</strong>
-                  <span class="notification-time">{{ notification.timestamp | date:'short' }}</span>
-                </div>
-                <p>{{ notification.message }}</p>
-              </div>
-            }
-          </div>
-        }
-      </div>
-
-      <div class="quick-actions">
-        <h2>Quick Actions</h2>
-        <div class="actions-grid">
-          <button class="action-btn" (click)="navigateTo('/products/new')">
-            <span class="action-icon">➕</span>
-            <span>Add Product</span>
-          </button>
-          <button class="action-btn" (click)="navigateTo('/orders/new')">
-            <span class="action-icon">🛒</span>
-            <span>New Order</span>
-          </button>
-          <button class="action-btn" (click)="navigateTo('/purchase-orders/new')">
-            <span class="action-icon">📝</span>
-            <span>New Purchase Order</span>
-          </button>
-          <button class="action-btn" (click)="navigateTo('/stock-movements/new')">
-            <span class="action-icon">📦</span>
-            <span>Stock Movement</span>
-          </button>
-        </div>
-      </div>
-    </div>
-  </div>
-</div>

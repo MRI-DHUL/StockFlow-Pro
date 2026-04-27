@@ -1,4 +1,4 @@
-import { Component, OnInit, inject, ChangeDetectorRef } from '@angular/core';
+﻿import { Component, OnInit, inject, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { MatTableModule } from '@angular/material/table';
@@ -26,234 +26,6 @@ import { AuditLog } from '../../../shared/models/domain.models';
   ],
   templateUrl: './audit-log-list.component.html',
   styleUrls: ['./audit-log-list.component.scss']
-})
-export class AuditLogListComponent implements OnInit {
-      <mat-card-content>
-        <!-- Filters -->
-        <div class="filters-container">
-          <form [formGroup]="filterForm" class="filters-form">
-            <mat-form-field appearance="outline">
-              <mat-label>Entity Name</mat-label>
-              <input matInput formControlName="entityName" placeholder="e.g., Product, Order">
-            </mat-form-field>
-
-            <mat-form-field appearance="outline">
-              <mat-label>Action</mat-label>
-              <input matInput formControlName="action" placeholder="e.g., Created, Updated">
-            </mat-form-field>
-
-            <button mat-raised-button color="primary" (click)="applyFilters()">
-              <mat-icon>filter_list</mat-icon>
-              Apply
-            </button>
-            <button mat-button (click)="resetFilters()">Reset</button>
-          </form>
-        </div>
-
-        <!-- Table -->
-        <div class="table-container">
-          <table mat-table [dataSource]="auditLogs" class="mat-elevation-z2">
-            <ng-container matColumnDef="timestamp">
-              <th mat-header-cell *matHeaderCellDef>Timestamp</th>
-              <td mat-cell *matCellDef="let log">{{ log.timestamp | date:'short' }}</td>
-            </ng-container>
-
-            <ng-container matColumnDef="entityName">
-              <th mat-header-cell *matHeaderCellDef>Entity</th>
-              <td mat-cell *matCellDef="let log">{{ log.entityName }}</td>
-            </ng-container>
-
-            <ng-container matColumnDef="action">
-              <th mat-header-cell *matHeaderCellDef>Action</th>
-              <td mat-cell *matCellDef="let log">
-                <span [class]="getActionClass(log.action)">{{ log.action }}</span>
-              </td>
-            </ng-container>
-
-            <ng-container matColumnDef="performedBy">
-              <th mat-header-cell *matHeaderCellDef>Performed By</th>
-              <td mat-cell *matCellDef="let log">{{ log.performedBy || 'System' }}</td>
-            </ng-container>
-
-            <ng-container matColumnDef="ipAddress">
-              <th mat-header-cell *matHeaderCellDef>IP Address</th>
-              <td mat-cell *matCellDef="let log">{{ log.ipAddress || '-' }}</td>
-            </ng-container>
-
-            <ng-container matColumnDef="changes">
-              <th mat-header-cell *matHeaderCellDef>Changes</th>
-              <td mat-cell *matCellDef="let log">
-                <button mat-icon-button *ngIf="log.changes" (click)="viewChanges(log)">
-                  <mat-icon>visibility</mat-icon>
-                </button>
-                <span *ngIf="!log.changes">-</span>
-              </td>
-            </ng-container>
-
-            <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
-            <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
-          </table>
-          <div class="no-data-container" *ngIf="auditLogs.length === 0">
-            <div class="no-data-message">No Data Found</div>
-          </div>
-        </div>
-})export class AuditLogListComponent implements OnInit {
-  private readonly auditLogService = inject(AuditLogService);
-  private readonly toastr = inject(ToastrService);
-  private readonly fb = inject(FormBuilder);
-  private readonly cdr = inject(ChangeDetectorRef);
-
-  auditLogs: AuditLog[] = [];
-  displayedColumns = ['timestamp', 'entityName', 'action', 'performedBy', 'ipAddress', 'changes'];
-
-  filterForm: FormGroup = this.fb.group({
-    entityName: [''],
-    action: ['']
-  });
-
-  ngOnInit(): void {
-    this.loadAuditLogs();
-      border-radius: 16px;
-      box-shadow: 0 8px 16px rgba(0,0,0,0.1);
-      margin: 24px;
-      background: white;
-      animation: fadeIn 0.4s ease-out;
-    }
-
-    @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(10px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
-
-    mat-card-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      background: white;
-      border-bottom: 2px solid black;
-      color: black;
-      padding: 24px;
-      margin: -16px -16px 24px -16px;
-      border-radius: 16px 16px 0 0;
-
-      mat-card-title {
-        font-size: 1.8rem;
-        font-weight: 600;
-        margin: 0;
-        color: black !important;
-      }
-
-      button {
-        background: black !important;
-        color: white !important;
-        border-radius: 8px;
-        font-weight: 600;
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.2);
-
-        mat-icon {
-          color: white;
-        }
-      }
-    }
-
-    .filters-container {
-      background: white;
-      padding: 20px;
-      border-radius: 12px;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-      margin-bottom: 24px;
-    }
-
-    .filters-form {
-      display: flex;
-      gap: 16px;
-      flex-wrap: wrap;
-      align-items: center;
-
-      mat-form-field {
-        min-width: 220px;
-        flex: 1;
-      }
-
-      button {
-        border-radius: 8px;
-        font-weight: 600;
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
-      }
-    }
-
-    .table-container {
-      overflow-x: auto;
-      margin: 20px 0;
-      border-radius: 12px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.08);
-    }
-
-    table {
-      width: 100%;
-      background: white;
-
-      th {
-        background: #000000;
-        color: white !important;
-        font-weight: 700;
-        font-size: 0.95rem;
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
-        padding: 16px !important;
-      }
-
-      td {
-        padding: 14px !important;
-        font-size: 0.95rem;
-        color: black !important;
-      }
-
-      tr {
-        // No hover effect
-      }
-    }
-
-    .action-created {
-      color: white !important;
-      font-weight: 700;
-      background: #000000;
-      padding: 6px 14px;
-      border-radius: 16px;
-      text-transform: uppercase;
-      font-size: 0.85rem;
-      letter-spacing: 0.5px;
-      display: inline-block;
-    }
-
-    .action-updated {
-      color: #000000;
-      font-weight: 700;
-      background: white;
-      border: 2px solid #000000;
-      padding: 6px 14px;
-      border-radius: 16px;
-      text-transform: uppercase;
-      font-size: 0.85rem;
-      letter-spacing: 0.5px;
-      display: inline-block;
-    }
-
-    .action-deleted {
-      color: white !important;
-      font-weight: 700;
-      background: #000000;
-      padding: 6px 14px;
-      border-radius: 16px;
-      text-transform: uppercase;
-      font-size: 0.85rem;
-      letter-spacing: 0.5px;
-      display: inline-block;
-    }
-  `]
 })
 export class AuditLogListComponent implements OnInit {
   private readonly auditLogService = inject(AuditLogService);
@@ -310,22 +82,16 @@ export class AuditLogListComponent implements OnInit {
   }
 
   viewChanges(log: AuditLog): void {
-    const changes = [];
-    if (log.oldValues) {
-      changes.push(`Old: ${log.oldValues}`);
-    }
-    if (log.newValues) {
-      changes.push(`New: ${log.newValues}`);
-    }
-    if (changes.length > 0) {
-      this.toastr.info(changes.join(' | '), 'Changes', { timeOut: 10000 });
-    }
+    this.toastr.info(`Viewing changes for ${log.entityName}`, 'Info');
+    // TODO: Implement changes dialog
   }
 
   getActionClass(action: string): string {
-    if (action.includes('Created')) return 'action-created';
-    if (action.includes('Updated')) return 'action-updated';
-    if (action.includes('Deleted')) return 'action-deleted';
-    return '';
+    switch (action.toLowerCase()) {
+      case 'created': return 'action-created';
+      case 'updated': return 'action-updated';
+      case 'deleted': return 'action-deleted';
+      default: return '';
+    }
   }
 }
