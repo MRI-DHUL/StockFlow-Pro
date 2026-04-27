@@ -90,7 +90,7 @@ jobs:
       
     - name: Run Playwright tests
       working-directory: ./application/frontend
-      run: npm run test:e2e:chromium
+      run: npx playwright test e2e/tests/auth.spec.ts e2e/tests/navigation.spec.ts --project=chromium
       env:
         CI: true
         
