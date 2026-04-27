@@ -40,13 +40,13 @@ jobs:
       uses: actions/setup-dotnet@v4
       with:
         dotnet-version: '8.0.x'
-    
-    - name: Install EF Core tools
-      run: dotnet tool install --global dotnet-ef
         
     - name: Restore .NET dependencies
       working-directory: ./application/backend
       run: dotnet restore StockFlow.sln
+      
+    - name: Restore .NET tools
+      run: dotnet tool restore
       
     - name: Build backend
       working-directory: ./application/backend
@@ -54,7 +54,7 @@ jobs:
       
     - name: Apply database migrations
       working-directory: ./application/backend/src/StockFlow.API
-      run: dotnet ef database update --no-build --configuration Release
+      run: dotnet ef database update --configuration Release
       env:
         ASPNETCORE_ENVIRONMENT: Test
         ConnectionStrings__DefaultConnection: Host=localhost;Port=5432;Database=stockflow_test;Username=postgres;Password=postgres
