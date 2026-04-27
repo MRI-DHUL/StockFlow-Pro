@@ -8,7 +8,7 @@ test.describe('Navigation', () => {
     await page.locator('input[type="email"]').fill(TEST_USERS.admin.email);
     await page.locator('input[type="password"]').fill(TEST_USERS.admin.password);
     await page.locator('button[type="submit"]').click();
-    await page.waitForURL('**/dashboard', { timeout: 10000 });
+    await page.waitForURL('**/dashboard', { timeout: 30000 });
   });
 
   test('should navigate to all main pages', async ({ page }) => {

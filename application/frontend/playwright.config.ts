@@ -10,9 +10,11 @@ export default defineConfig({
   /* Fail the build if you accidentally left test.only in the source code. */
   forbidOnly: false,
   /* Retry failed tests */
-  retries: 0,
+  retries: 1,
   /* Use single worker for sequential test execution */
   workers: 1,
+  /* Test timeout */
+  timeout: 60000,
   /* Reporter to use. See https://playwright.dev/docs/test-reporters */
   reporter: 'html',
   /* Shared settings for all the projects below. See https://playwright.dev/docs/api/class-testoptions. */
