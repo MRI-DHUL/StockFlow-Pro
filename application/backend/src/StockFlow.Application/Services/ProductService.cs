@@ -106,8 +106,16 @@ public class ProductService : IProductService
     {
         await _createValidator.ValidateAndThrowAsync(createProductDto, cancellationToken);
 
-        var product = _mapper.Map<Product>(createProductDto);
+        // Check for duplicate by Name or SKU
+        var existingProduct = await _unitOfWork.Products.Query()
+            .FirstOrDefaultAsync(p => p.Name.ToLower() == createProductDto.Name.ToLower() || p.SKU.ToLower() == createProductDto.SKU.ToLower(), cancellationToken);
+        if (existingProduct != null)
+        {
+            // Return existing product, do not add duplicate
+            return _mapper.Map<ProductDto>(existingProduct);
+        }
 
+        var product = _mapper.Map<Product>(createProductDto);
         await _unitOfWork.Products.AddAsync(product, cancellationToken);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
 

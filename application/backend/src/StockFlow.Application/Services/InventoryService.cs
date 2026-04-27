@@ -91,10 +91,27 @@ public class InventoryService : IInventoryService
     {
         await _createValidator.ValidateAndThrowAsync(createInventoryDto, cancellationToken);
 
+        // Check for existing inventory for this product and warehouse
+        var existingInventory = await _inventoryRepository.GetByProductAndWarehouseAsync(createInventoryDto.ProductId, createInventoryDto.WarehouseId, cancellationToken);
+        if (existingInventory != null)
+        {
+            // Update existing inventory
+            existingInventory.Quantity = createInventoryDto.Quantity;
+            existingInventory.Threshold = createInventoryDto.Threshold;
+            existingInventory.LastUpdated = DateTime.UtcNow;
+            await _unitOfWork.Inventories.UpdateAsync(existingInventory, cancellationToken);
+            await _unitOfWork.SaveChangesAsync(cancellationToken);
+            var updated = await _inventoryRepository.Query()
+                .Include(i => i.Product)
+                .Include(i => i.Warehouse)
+                .FirstOrDefaultAsync(i => i.Id == existingInventory.Id, cancellationToken);
+            return updated != null ? _mapper.Map<InventoryDto>(updated) : throw new InvalidOperationException("Failed to update inventory");
+        }
+
         var inventory = _mapper.Map<Inventory>(createInventoryDto);
         inventory.LastUpdated = DateTime.UtcNow;
-
         await _inventoryRepository.AddAsync(inventory, cancellationToken);
+        await _unitOfWork.SaveChangesAsync(cancellationToken);
 
         var result = await _inventoryRepository.Query()
             .Include(i => i.Product)
