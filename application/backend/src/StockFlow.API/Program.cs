@@ -29,6 +29,10 @@ try
 
     var builder = WebApplication.CreateBuilder(args);
 
+    // Railway: Use PORT environment variable if present
+    var port = Environment.GetEnvironmentVariable("PORT") ?? "8080";
+    builder.WebHost.UseUrls($"http://*:{port}");
+
     // Add Serilog
     builder.Host.UseSerilog();
 
