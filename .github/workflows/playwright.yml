@@ -11,6 +11,20 @@ jobs:
     timeout-minutes: 60
     runs-on: ubuntu-latest
     
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: stockflow_test
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+    
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
@@ -21,8 +35,52 @@ jobs:
         node-version: '20'
         cache: 'npm'
         cache-dependency-path: application/frontend/package-lock.json
+    
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: '8.0.x'
+    
+    - name: Install EF Core tools
+      run: dotnet tool install --global dotnet-ef
         
-    - name: Install dependencies
+    - name: Restore .NET dependencies
+      working-directory: ./application/backend
+      run: dotnet restore StockFlow.sln
+      
+    - name: Build backend
+      working-directory: ./application/backend
+      run: dotnet build StockFlow.sln --no-restore --configuration Release
+      
+    - name: Apply database migrations
+      working-directory: ./application/backend/src/StockFlow.API
+      run: dotnet ef database update --no-build --configuration Release
+      env:
+        ASPNETCORE_ENVIRONMENT: Test
+        ConnectionStrings__DefaultConnection: Host=localhost;Port=5432;Database=stockflow_test;Username=postgres;Password=postgres
+        
+    - name: Start backend API
+      working-directory: ./application/backend/src/StockFlow.API
+      run: |
+        nohup dotnet run --no-build --configuration Release > api.log 2>&1 &
+        echo $! > api.pid
+        sleep 20
+        
+        # Wait for API to be ready
+        for i in {1..30}; do
+          if curl -f http://localhost:5057/health > /dev/null 2>&1; then
+            echo "API is ready"
+            break
+          fi
+          echo "Waiting for API to be ready... ($i/30)"
+          sleep 2
+        done
+      env:
+        ASPNETCORE_ENVIRONMENT: Test
+        ASPNETCORE_URLS: http://localhost:5057
+        ConnectionStrings__DefaultConnection: Host=localhost;Port=5432;Database=stockflow_test;Username=postgres;Password=postgres
+        
+    - name: Install frontend dependencies
       working-directory: ./application/frontend
       run: npm ci
       
@@ -35,6 +93,21 @@ jobs:
       run: npm run test:e2e:chromium
       env:
         CI: true
+        
+    - name: Stop backend API
+      if: always()
+      run: |
+        if [ -f ./application/backend/src/StockFlow.API/api.pid ]; then
+          kill $(cat ./application/backend/src/StockFlow.API/api.pid) || true
+        fi
+        
+    - name: Upload API logs
+      uses: actions/upload-artifact@v4
+      if: always()
+      with:
+        name: api-logs
+        path: application/backend/src/StockFlow.API/api.log
+        retention-days: 7
         
     - name: Upload Playwright Report
       uses: actions/upload-artifact@v4
