@@ -39,15 +39,10 @@ import { ProductFormComponent } from '../product-form/product-form.component';
     PaginationComponent,
     CurrencyFormatterPipe
   ],
-  template: `
-    <mat-card>
-      <mat-card-header>
-        <mat-card-title>Products Management</mat-card-title>
-        <button mat-raised-button color="accent" (click)="openProductDialog()">
-          <mat-icon>add</mat-icon>
-          Add Product
-        </button>
-      </mat-card-header>
+  templateUrl: './product-list.component.html',
+  styleUrls: ['./product-list.component.scss']
+})
+export class ProductListComponent implements OnInit {
       <mat-card-content>
         <!-- Filters -->
         <div class="filters-container">
@@ -138,13 +133,30 @@ import { ProductFormComponent } from '../product-form/product-form.component';
           [totalCount]="totalCount"
           [pageSize]="pageSize"
           [pageNumber]="pageNumber"
-          (pageChange)="onPageChange($event)">
-        </app-pagination>
-      </mat-card-content>
-    </mat-card>
-  `,
-  styles: [`
-    mat-card {
+})export class ProductListComponent implements OnInit {
+  private readonly productService = inject(ProductService);
+  private readonly dialog = inject(MatDialog);
+  private readonly toastr = inject(ToastrService);
+  private readonly fb = inject(FormBuilder);
+  private readonly cdr = inject(ChangeDetectorRef);
+
+  products: Product[] = [];
+  categories: string[] = [];
+  totalCount = 0;
+  pageSize = 10;
+  pageNumber = 1;
+  displayedColumns = ['sku', 'name', 'category', 'unitPrice', 'actions'];
+
+  filterForm: FormGroup = this.fb.group({
+    searchTerm: [''],
+    category: [''],
+    minPrice: [null],
+    maxPrice: [null]
+  });
+
+  ngOnInit(): void {
+    this.loadProducts();
+    this.loadCategories();
       border-radius: 16px;
       box-shadow: 0 8px 16px rgba(0,0,0,0.1);
       margin: 24px;

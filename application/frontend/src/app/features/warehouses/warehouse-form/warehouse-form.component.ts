@@ -22,58 +22,8 @@ import { Warehouse, CreateWarehouseDto, UpdateWarehouseDto } from '../../../shar
     MatFormFieldModule,
     MatCheckboxModule
   ],
-  template: `
-    <h2 mat-dialog-title>{{ isEditMode ? 'Edit Warehouse' : 'Add Warehouse' }}</h2>
-    <mat-dialog-content>
-      <form [formGroup]="warehouseForm" class="warehouse-form">
-        <mat-form-field appearance="outline">
-          <mat-label>Warehouse Name</mat-label>
-          <input matInput formControlName="name" placeholder="Enter warehouse name">
-          <mat-error *ngIf="warehouseForm.get('name')?.hasError('required')">
-            Warehouse name is required
-          </mat-error>
-        </mat-form-field>
-
-        <mat-form-field appearance="outline">
-          <mat-label>Location</mat-label>
-          <input matInput formControlName="location" placeholder="Enter location">
-          <mat-error *ngIf="warehouseForm.get('location')?.hasError('required')">
-            Location is required
-          </mat-error>
-        </mat-form-field>
-
-        <mat-form-field appearance="outline">
-          <mat-label>Capacity</mat-label>
-          <input matInput type="number" formControlName="capacity" placeholder="Enter capacity">
-          <mat-error *ngIf="warehouseForm.get('capacity')?.hasError('required')">
-            Capacity is required
-          </mat-error>
-          <mat-error *ngIf="warehouseForm.get('capacity')?.hasError('min')">
-            Capacity must be greater than 0
-          </mat-error>
-        </mat-form-field>
-
-        <mat-checkbox *ngIf="isEditMode" formControlName="isActive">
-          Is Active
-        </mat-checkbox>
-      </form>
-    </mat-dialog-content>
-    <mat-dialog-actions align="end">
-      <button mat-button (click)="onCancel()">Cancel</button>
-      <button mat-raised-button color="primary" (click)="onSubmit()" [disabled]="!warehouseForm.valid || isSubmitting">
-        {{ isSubmitting ? 'Saving...' : 'Save' }}
-      </button>
-    </mat-dialog-actions>
-  `,
-  styles: [`
-    .warehouse-form {
-      display: flex;
-      flex-direction: column;
-      gap: 16px;
-      padding: 20px 0;
-      min-width: 400px;
-    }
-  `]
+  templateUrl: './warehouse-form.component.html',
+  styleUrls: ['./warehouse-form.component.scss']
 })
 export class WarehouseFormComponent implements OnInit {
   private readonly fb = inject(FormBuilder);

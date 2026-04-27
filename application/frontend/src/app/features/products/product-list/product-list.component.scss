@@ -1,0 +1,237 @@
+mat-card {
+  border-radius: 16px;
+  box-shadow: 0 8px 16px rgba(0,0,0,0.1);
+  margin: 24px;
+  background: white;
+  animation: fadeIn 0.4s ease-out;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+mat-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: white;
+  border-bottom: 2px solid black;
+  color: black;
+  padding: 24px;
+  margin: -16px -16px 24px -16px;
+  border-radius: 16px 16px 0 0;
+
+  mat-card-title {
+    font-size: 1.8rem;
+    font-weight: 600;
+    margin: 0;
+    color: black !important;
+  }
+
+  button {
+    background: black !important;
+    color: white !important;
+    border-radius: 8px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+
+    mat-icon {
+      color: white;
+    }
+  }
+}
+
+.filters-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 28px;
+  gap: 20px;
+  background: white;
+  padding: 24px;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+}
+
+.filters-form {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+  flex: 1;
+}
+
+.filters-form mat-form-field {
+  min-width: 200px;
+  flex: 1;
+}
+
+.filters-form button {
+  border-radius: 8px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.table-container {
+  overflow-x: auto;
+  margin: 24px 0;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+  background: white;
+}
+
+table {
+  width: 100%;
+  background: white;
+  
+  th {
+    background: #000000;
+    color: white !important;
+    font-weight: 700;
+    font-size: 0.9rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    padding: 18px 16px !important;
+    border: none;
+  }
+
+  td {
+    padding: 16px !important;
+    font-size: 0.95rem;
+    color: #000000;
+    border-bottom: 1px solid #e5e5e5;
+  }
+
+  tr {
+    &:nth-child(even) {
+      background: #fafafa;
+    }
+  }
+}
+
+.category-badge {
+  display: inline-block;
+  padding: 6px 16px;
+  border-radius: 20px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  text-transform: capitalize;
+  letter-spacing: 0.3px;
+  border: 2px solid;
+}
+
+.category-electronics {
+  background: #000000;
+  color: white !important;
+  border-color: #000000;
+}
+
+.category-office-supplies {
+  background: white;
+  color: #000000;
+  border-color: #000000;
+}
+
+.category-furniture {
+  background: #000000;
+  color: white !important;
+  border-color: #000000;
+}
+
+.category-hardware {
+  background: white;
+  color: #000000;
+  border-color: #000000;
+}
+
+.category-packaging {
+  background: #000000;
+  color: white !important;
+  border-color: #000000;
+}
+
+.category-default {
+  background: white;
+  color: #000000;
+  border-color: #000000;
+}
+
+.price-cell {
+  font-weight: 700;
+  font-size: 1.1rem;
+  color: #000000;
+}
+
+.actions-cell {
+  display: flex;
+  gap: 8px;
+  justify-content: flex-start;
+  align-items: center;
+}
+
+.action-btn {
+  width: 40px !important;
+  height: 40px !important;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+  
+  mat-icon {
+    font-size: 20px;
+    width: 20px;
+    height: 20px;
+  }
+}
+
+.edit-btn {
+  background: #000000 !important;
+  color: white !important;
+  
+  mat-icon {
+    color: white !important;
+  }
+}
+
+.delete-btn {
+  background: white !important;
+  color: #000000 !important;
+  border: 2px solid #000000;
+  
+  mat-icon {
+    color: #000000 !important;
+  }
+}
+
+.status-active {
+  color: #000000;
+  font-weight: 600;
+  background: white;
+  border: 2px solid #000000;
+  padding: 6px 14px;
+  border-radius: 16px;
+  display: inline-block;
+}
+
+.status-inactive {
+  color: white !important;
+  font-weight: 600;
+  background: #000000;
+  padding: 6px 14px;
+  border-radius: 16px;
+  display: inline-block;
+}
+
+button[mat-icon-button] {
+  // No hover effect
+}
+
+@media (max-width: 768px) {
+  .filters-container {
+    flex-direction: column;
+  }
+
+  .filters-form {
+    width: 100%;
+  }
+}

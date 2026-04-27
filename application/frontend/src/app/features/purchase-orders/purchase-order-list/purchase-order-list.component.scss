@@ -1,0 +1,178 @@
+mat-card {
+  border-radius: 16px;
+  box-shadow: 0 8px 16px rgba(0,0,0,0.1);
+  margin: 24px;
+  background: white;
+  animation: fadeIn 0.4s ease-out;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+mat-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: white;
+  border-bottom: 2px solid black;
+  color: black;
+  padding: 24px;
+  margin: -16px -16px 24px -16px;
+  border-radius: 16px 16px 0 0;
+
+  mat-card-title {
+    font-size: 1.8rem;
+    font-weight: 600;
+    margin: 0;
+    color: black !important;
+  }
+
+  button {
+    background: black !important;
+    color: white !important;
+    border-radius: 8px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+
+    mat-icon {
+      color: white;
+    }
+  }
+}
+
+.table-container {
+  overflow-x: auto;
+  margin: 20px 0;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+}
+
+.filters-container {
+  margin-bottom: 24px;
+  padding: 20px;
+  background: #fafafa;
+  border-radius: 12px;
+  border: 1px solid #e0e0e0;
+}
+
+.filters-form {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+  flex-wrap: wrap;
+
+  mat-form-field {
+    flex: 1;
+    min-width: 200px;
+  }
+
+  button {
+    height: 40px;
+    margin-top: 8px;
+  }
+}
+
+table {
+  width: 100%;
+  background: white;
+
+  th {
+    background: #000000;
+    color: white !important;
+    font-weight: 700;
+    font-size: 0.95rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    padding: 16px !important;
+  }
+
+  td {
+    padding: 14px !important;
+    font-size: 0.95rem;
+    color: black !important;
+  }
+
+  tr {
+    // No hover effect
+  }
+
+  mat-icon {
+    // No hover effect
+  }
+}
+
+mat-chip.status-draft {
+  background: #000000 !important;
+  color: white !important;
+  font-weight: 700;
+  padding: 8px 16px !important;
+  border-radius: 16px !important;
+  text-transform: uppercase;
+  font-size: 0.85rem !important;
+
+  ::ng-deep .mdc-evolution-chip__text-label {
+    color: white !important;
+  }
+}
+
+mat-chip.status-submitted {
+  background: white !important;
+  color: #000000 !important;
+  border: 2px solid #000000;
+  font-weight: 700;
+  padding: 8px 16px !important;
+  border-radius: 16px !important;
+  text-transform: uppercase;
+  font-size: 0.85rem !important;
+
+  ::ng-deep .mdc-evolution-chip__text-label {
+    color: #000000 !important;
+  }
+}
+
+mat-chip.status-approved {
+  background: #000000 !important;
+  color: white !important;
+  font-weight: 700;
+  padding: 8px 16px !important;
+  border-radius: 16px !important;
+  text-transform: uppercase;
+  font-size: 0.85rem !important;
+
+  ::ng-deep .mdc-evolution-chip__text-label {
+    color: white !important;
+  }
+}
+
+mat-chip.status-received {
+  background: white !important;
+  color: #000000 !important;
+  border: 2px solid #000000;
+  font-weight: 700;
+  padding: 8px 16px !important;
+  border-radius: 16px !important;
+  text-transform: uppercase;
+  font-size: 0.85rem !important;
+
+  ::ng-deep .mdc-evolution-chip__text-label {
+    color: #000000 !important;
+  }
+}
+
+mat-chip.status-cancelled {
+  background: #000000 !important;
+  color: white !important;
+  font-weight: 700;
+  padding: 8px 16px !important;
+  border-radius: 16px !important;
+  text-transform: uppercase;
+  font-size: 0.85rem !important;
+
+  ::ng-deep .mdc-evolution-chip__text-label {
+    color: white !important;
+  }
+}

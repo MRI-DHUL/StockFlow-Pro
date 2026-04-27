@@ -33,109 +33,109 @@ import { CurrencyFormatterPipe } from '../../../shared/pipes/currency-formatter.
     PaginationComponent,
     CurrencyFormatterPipe
   ],
-  template: `
-    <mat-card>
-      <mat-card-header>
-        <mat-card-title>Orders Management</mat-card-title>
-        <button mat-raised-button color="accent" (click)="createOrder()">
-          <mat-icon>add</mat-icon>
-          Create Order
-        </button>
-      </mat-card-header>
-      <mat-card-content>
-        <!-- Filters -->
-        <div class="filters-container">
-          <form [formGroup]="filterForm" class="filters-form">
-            <mat-form-field appearance="outline">
-              <mat-label>Search Order Number</mat-label>
-              <input matInput formControlName="orderNumber" placeholder="Search...">
-            </mat-form-field>
+  templateUrl: './order-list.component.html',
+  styleUrls: ['./order-list.component.scss']
+})
+export class OrderListComponent implements OnInit {
+  private readonly orderService = inject(OrderService);
+  private readonly toastr = inject(ToastrService);
+  private readonly fb = inject(FormBuilder);
+  private readonly cdr = inject(ChangeDetectorRef);
 
-            <mat-form-field appearance="outline">
-              <mat-label>Customer Name</mat-label>
-              <input matInput formControlName="customerName" placeholder="Search...">
-            </mat-form-field>
+  orders: Order[] = [];
+  totalCount = 0;
+  pageSize = 10;
+  pageNumber = 1;
+  displayedColumns = ['orderNumber', 'orderDate', 'customerName', 'totalAmount', 'status', 'actions'];
 
-            <mat-form-field appearance="outline">
-              <mat-label>Status</mat-label>
-              <mat-select formControlName="status">
-                <mat-option value="">All Statuses</mat-option>
-                <mat-option [value]="0">Pending</mat-option>
-                <mat-option [value]="1">Confirmed</mat-option>
-                <mat-option [value]="2">Shipped</mat-option>
-                <mat-option [value]="3">Delivered</mat-option>
-                <mat-option [value]="4">Cancelled</mat-option>
-              </mat-select>
-            </mat-form-field>
+  filterForm: FormGroup = this.fb.group({
+    orderNumber: [''],
+    customerName: [''],
+    status: ['']
+  });
 
-            <button mat-raised-button color="primary" (click)="applyFilters()">
-              <mat-icon>filter_list</mat-icon>
-              Apply
-            </button>
-            <button mat-button (click)="resetFilters()">Reset</button>
-          </form>
-        </div>
+  ngOnInit(): void {
+    this.loadOrders();
+  }
 
-        <!-- Table -->
-        <div class="table-container">
-          <div class="no-data-container" *ngIf="orders.length === 0">
-            <div class="no-data-message">No Data Found</div>
-          </div>
-          <table mat-table [dataSource]="orders" class="mat-elevation-z2" *ngIf="orders.length > 0">
-            <ng-container matColumnDef="orderNumber">
-              <th mat-header-cell *matHeaderCellDef>Order #</th>
-              <td mat-cell *matCellDef="let order">{{ order.orderNumber }}</td>
-            </ng-container>
+  loadOrders(): void {
+    const filters = {
+      ...this.filterForm.value,
+      pageNumber: this.pageNumber,
+      pageSize: this.pageSize,
+      sortBy: 'orderDate',
+      sortDescending: true
+    };
 
-            <ng-container matColumnDef="orderDate">
-              <th mat-header-cell *matHeaderCellDef>Order Date</th>
-              <td mat-cell *matCellDef="let order">{{ order.orderDate | date:'short' }}</td>
-            </ng-container>
+    // Remove empty values
+    Object.keys(filters).forEach(key => {
+      if (filters[key] === '' || filters[key] === null) {
+        delete filters[key];
+      }
+    });
 
-            <ng-container matColumnDef="customerName">
-              <th mat-header-cell *matHeaderCellDef>Customer</th>
-              <td mat-cell *matCellDef="let order">{{ order.customerName || '-' }}</td>
-            </ng-container>
+    this.orderService.getPaged(filters).subscribe({
+      next: (response: PagedResponse<Order>) => {
+        this.orders = [...response.items];
+        this.totalCount = response.totalCount;
+        this.cdr.detectChanges();
+      },
+      error: (error) => {
+        this.toastr.error('Failed to load orders', 'Error');
+        console.error(error);
+      }
+    });
+  }
 
-            <ng-container matColumnDef="totalAmount">
-              <th mat-header-cell *matHeaderCellDef>Total Amount</th>
-              <td mat-cell *matCellDef="let order">{{ order.totalAmount | currency }}</td>
-            </ng-container>
+  createOrder(): void {
+    this.toastr.info('Create Order functionality coming soon', 'Info');
+    // TODO: Implement order creation dialog
+  }
 
-            <ng-container matColumnDef="status">
-              <th mat-header-cell *matHeaderCellDef>Status</th>
-              <td mat-cell *matCellDef="let order">
-                <mat-chip [class]="getStatusClass(order.status)">
-                  {{ getStatusLabel(order.status) }}
-                </mat-chip>
-              </td>
-            </ng-container>
+  applyFilters(): void {
+    this.pageNumber = 1;
+    this.loadOrders();
+  }
 
-            <ng-container matColumnDef="actions">
-              <th mat-header-cell *matHeaderCellDef>Actions</th>
-              <td mat-cell *matCellDef="let order">
-                <button mat-icon-button color="primary" (click)="viewOrder(order)">
-                  <mat-icon>visibility</mat-icon>
-                </button>
-              </td>
-            </ng-container>
+  resetFilters(): void {
+    this.filterForm.reset();
+    this.pageNumber = 1;
+    this.loadOrders();
+  }
 
-            <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
-            <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
-          </table>
-        </div>
+  onPageChange(event: { pageNumber: number; pageSize: number }): void {
+    this.pageNumber = event.pageNumber;
+    this.pageSize = event.pageSize;
+    this.loadOrders();
+  }
 
-        <!-- Pagination -->
-        <app-pagination
-          [totalCount]="totalCount"
-          [pageSize]="pageSize"
-          [pageNumber]="pageNumber"
-          (pageChange)="onPageChange($event)">
-        </app-pagination>
-      </mat-card-content>
-    </mat-card>
-  `,
-  styles: [`
+  viewOrder(order: Order): void {
+    this.toastr.info(`Viewing order ${order.orderNumber}`, 'Info');
+    // TODO: Implement order details dialog
+  }
+
+  getStatusLabel(status: OrderStatus): string {
+    switch (status) {
+      case OrderStatus.Pending: return 'Pending';
+      case OrderStatus.Confirmed: return 'Confirmed';
+      case OrderStatus.Shipped: return 'Shipped';
+      case OrderStatus.Delivered: return 'Delivered';
+      case OrderStatus.Cancelled: return 'Cancelled';
+      default: return 'Unknown';
+    }
+  }
+
+  getStatusClass(status: OrderStatus): string {
+    switch (status) {
+      case OrderStatus.Pending: return 'status-pending';
+      case OrderStatus.Confirmed: return 'status-confirmed';
+      case OrderStatus.Shipped: return 'status-shipped';
+      case OrderStatus.Delivered: return 'status-delivered';
+      case OrderStatus.Cancelled: return 'status-cancelled';
+      default: return '';
+    }
+  }
+}
     mat-card {
       border-radius: 16px;
       box-shadow: 0 8px 16px rgba(0,0,0,0.1);

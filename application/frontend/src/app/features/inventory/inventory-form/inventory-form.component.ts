@@ -20,13 +20,10 @@ import { InventoryItem, UpdateInventoryDto } from '../../../shared/models/domain
     MatInputModule,
     MatFormFieldModule
   ],
-  template: `
-    <h2 mat-dialog-title>Update Inventory</h2>
-    <mat-dialog-content>
-      <div class="inventory-info">
-        <p><strong>Product:</strong> {{ data.productName }}</p>
-        <p><strong>Warehouse:</strong> {{ data.warehouseName }}</p>
-      </div>
+  templateUrl: './inventory-form.component.html',
+  styleUrls: ['./inventory-form.component.scss']
+})
+export class InventoryFormComponent implements OnInit {
 
       <form [formGroup]="inventoryForm" class="inventory-form">
         <mat-form-field appearance="outline">
@@ -55,12 +52,25 @@ import { InventoryItem, UpdateInventoryDto } from '../../../shared/models/domain
     <mat-dialog-actions align="end">
       <button mat-button (click)="onCancel()">Cancel</button>
       <button mat-raised-button color="primary" (click)="onSubmit()" [disabled]="!inventoryForm.valid || isSubmitting">
-        {{ isSubmitting ? 'Saving...' : 'Save' }}
-      </button>
-    </mat-dialog-actions>
-  `,
-  styles: [`
-    .inventory-info {
+})export class InventoryFormComponent implements OnInit {
+  private readonly fb = inject(FormBuilder);
+  private readonly inventoryService = inject(InventoryService);
+  private readonly toastr = inject(ToastrService);
+  private readonly dialogRef = inject(MatDialogRef<InventoryFormComponent>);
+
+  inventoryForm!: FormGroup;
+  isSubmitting = false;
+
+  constructor(@Inject(MAT_DIALOG_DATA) public data: InventoryItem) {}
+
+  ngOnInit(): void {
+    this.inventoryForm = this.fb.group({
+      quantity: [this.data.quantity, [Validators.required, Validators.min(0)]],
+      threshold: [this.data.threshold, [Validators.required, Validators.min(0)]]
+    });
+  }
+
+  onSubmit(): void {
       background-color: #f5f5f5;
       padding: 16px;
       border-radius: 4px;

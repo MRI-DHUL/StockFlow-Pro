@@ -34,14 +34,10 @@ import { InventoryFormComponent } from '../inventory-form/inventory-form.compone
     MatDialogModule,
     PaginationComponent
   ],
-  template: `
-    <mat-card>
-      <mat-card-header>
-        <mat-card-title>Inventory Management</mat-card-title>
-      </mat-card-header>
-      <mat-card-content>
-        <!-- Filters -->
-        <div class="filters-container">
+  templateUrl: './inventory-list.component.html',
+  styleUrls: ['./inventory-list.component.scss']
+})
+export class InventoryListComponent implements OnInit {
           <form [formGroup]="filterForm" class="filters-form">
             <mat-form-field appearance="outline">
               <mat-label>Warehouse</mat-label>
@@ -111,12 +107,28 @@ import { InventoryFormComponent } from '../inventory-form/inventory-form.compone
           [pageSize]="pageSize"
           [pageNumber]="pageNumber"
           (pageChange)="onPageChange($event)">
-        </app-pagination>
-      </mat-card-content>
-    </mat-card>
-  `,
-  styles: [`
-    mat-card {
+})export class InventoryListComponent implements OnInit {
+  private readonly inventoryService = inject(InventoryService);
+  private readonly warehouseService = inject(WarehouseService);
+  private readonly dialog = inject(MatDialog);
+  private readonly toastr = inject(ToastrService);
+  private readonly fb = inject(FormBuilder);
+  private readonly cdr = inject(ChangeDetectorRef);
+
+  inventory: InventoryItem[] = [];
+  warehouses: any[] = [];
+  totalCount = 0;
+  pageSize = 10;
+  pageNumber = 1;
+  displayedColumns = ['productName', 'warehouseName', 'quantity', 'threshold', 'actions'];
+
+  filterForm: FormGroup = this.fb.group({
+    warehouseId: ['']
+  });
+
+  ngOnInit(): void {
+    this.loadInventory();
+    this.loadWarehouses();
       border-radius: 16px;
       box-shadow: 0 8px 16px rgba(0,0,0,0.1);
       margin: 24px;

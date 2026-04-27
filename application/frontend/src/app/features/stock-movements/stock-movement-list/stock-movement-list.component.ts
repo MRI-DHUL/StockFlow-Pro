@@ -30,74 +30,95 @@ import { StockMovement, MovementType } from '../../../shared/models/domain.model
     MatCardModule,
     MatChipsModule
   ],
-  template: `
-    <mat-card>
-      <mat-card-header>
-        <mat-card-title>Stock Movements</mat-card-title>
-        <button mat-raised-button color="accent" (click)="recordMovement()">
-          <mat-icon>add</mat-icon>
-          Record Movement
-        </button>
-      </mat-card-header>
-      <mat-card-content>
-        <!-- Filters -->
-        <div class="filters-container">
-          <form [formGroup]="filterForm" class="filters-form">
-            <mat-form-field appearance="outline">
-              <mat-label>Warehouse</mat-label>
-              <mat-select formControlName="warehouseId">
-                <mat-option value="">All Warehouses</mat-option>
-                <mat-option *ngFor="let warehouse of warehouses" [value]="warehouse.id">
-                  {{ warehouse.name }}
-                </mat-option>
-              </mat-select>
-            </mat-form-field>
+  templateUrl: './stock-movement-list.component.html',
+  styleUrls: ['./stock-movement-list.component.scss']
+})
+export class StockMovementListComponent implements OnInit {
+  private readonly stockMovementService = inject(StockMovementService);
+  private readonly warehouseService = inject(WarehouseService);
+  private readonly toastr = inject(ToastrService);
+  private readonly fb = inject(FormBuilder);
+  private readonly cdr = inject(ChangeDetectorRef);
 
-            <mat-form-field appearance="outline">
-              <mat-label>Movement Type</mat-label>
-              <mat-select formControlName="movementType">
-                <mat-option value="">All Types</mat-option>
-                <mat-option [value]="0">In</mat-option>
-                <mat-option [value]="1">Out</mat-option>
-                <mat-option [value]="2">Transfer</mat-option>
-                <mat-option [value]="3">Adjustment</mat-option>
-              </mat-select>
-            </mat-form-field>
+  movements: StockMovement[] = [];
+  warehouses: any[] = [];
+  displayedColumns = ['movementDate', 'productName', 'warehouseName', 'movementType', 'quantity', 'referenceNumber', 'notes'];
 
-            <button mat-raised-button color="primary" (click)="applyFilters()">
-              <mat-icon>filter_list</mat-icon>
-              Apply
-            </button>
-            <button mat-button (click)="resetFilters()">Reset</button>
-          </form>
-        </div>
+  filterForm: FormGroup = this.fb.group({
+    warehouseId: [''],
+    movementType: ['']
+  });
 
-        <!-- Table -->
-        <div class="table-container">
-          <table mat-table [dataSource]="movements" class="mat-elevation-z2">
-            <ng-container matColumnDef="movementDate">
-              <th mat-header-cell *matHeaderCellDef>Date</th>
-              <td mat-cell *matCellDef="let movement">{{ movement.movementDate | date:'short' }}</td>
-            </ng-container>
+  ngOnInit(): void {
+    this.loadMovements();
+    this.loadWarehouses();
+  }
 
-            <ng-container matColumnDef="productName">
-              <th mat-header-cell *matHeaderCellDef>Product</th>
-              <td mat-cell *matCellDef="let movement">{{ movement.productName }}</td>
-            </ng-container>
+  loadMovements(): void {
+    const filters = { ...this.filterForm.value };
 
-            <ng-container matColumnDef="warehouseName">
-              <th mat-header-cell *matHeaderCellDef>Warehouse</th>
-              <td mat-cell *matCellDef="let movement">{{ movement.warehouseName }}</td>
-            </ng-container>
+    // Remove empty values
+    Object.keys(filters).forEach(key => {
+      if (filters[key] === '' || filters[key] === null) {
+        delete filters[key];
+      }
+    });
 
-            <ng-container matColumnDef="movementType">
-              <th mat-header-cell *matHeaderCellDef>Type</th>
-              <td mat-cell *matCellDef="let movement">
-                <mat-chip [class]="getMovementTypeClass(movement.movementType)">
-                  {{ getMovementTypeLabel(movement.movementType) }}
-                </mat-chip>
-              </td>
-            </ng-container>
+    this.stockMovementService.getAll(filters).subscribe({
+      next: (movements) => {
+        this.movements = [...movements];
+        this.cdr.detectChanges();
+      },
+      error: (error) => {
+        this.toastr.error('Failed to load stock movements', 'Error');
+        console.error(error);
+      }
+    });
+  }
+
+  loadWarehouses(): void {
+    this.warehouseService.getAll().subscribe({
+      next: (warehouses) => {
+        this.warehouses = [...warehouses];
+        this.cdr.detectChanges();
+      }
+    });
+  }
+
+  recordMovement(): void {
+    this.toastr.info('Record Movement functionality coming soon', 'Info');
+    // TODO: Implement movement recording dialog
+  }
+
+  applyFilters(): void {
+    this.loadMovements();
+  }
+
+  resetFilters(): void {
+    this.filterForm.reset();
+    this.loadMovements();
+  }
+
+  getMovementTypeLabel(type: MovementType): string {
+    switch (type) {
+      case MovementType.In: return 'In';
+      case MovementType.Out: return 'Out';
+      case MovementType.Transfer: return 'Transfer';
+      case MovementType.Adjustment: return 'Adjustment';
+      default: return 'Unknown';
+    }
+  }
+
+  getMovementTypeClass(type: MovementType): string {
+    switch (type) {
+      case MovementType.In: return 'type-in';
+      case MovementType.Out: return 'type-out';
+      case MovementType.Transfer: return 'type-transfer';
+      case MovementType.Adjustment: return 'type-adjustment';
+      default: return '';
+    }
+  }
+}
 
             <ng-container matColumnDef="quantity">
               <th mat-header-cell *matHeaderCellDef>Quantity</th>
@@ -121,15 +142,25 @@ import { StockMovement, MovementType } from '../../../shared/models/domain.model
             <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
             <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
           </table>
-          <div class="no-data-container" *ngIf="movements.length === 0">
-            <div class="no-data-message">No Data Found</div>
-          </div>
-        </div>
-      </mat-card-content>
-    </mat-card>
-  `,
-  styles: [`
-    mat-card {
+})export class StockMovementListComponent implements OnInit {
+  private readonly stockMovementService = inject(StockMovementService);
+  private readonly warehouseService = inject(WarehouseService);
+  private readonly toastr = inject(ToastrService);
+  private readonly fb = inject(FormBuilder);
+  private readonly cdr = inject(ChangeDetectorRef);
+
+  movements: StockMovement[] = [];
+  warehouses: any[] = [];
+  displayedColumns = ['movementDate', 'productName', 'warehouseName', 'movementType', 'quantity', 'referenceNumber', 'notes'];
+
+  filterForm: FormGroup = this.fb.group({
+    warehouseId: [''],
+    movementType: ['']
+  });
+
+  ngOnInit(): void {
+    this.loadMovements();
+    this.loadWarehouses();
       border-radius: 16px;
       box-shadow: 0 8px 16px rgba(0,0,0,0.1);
       margin: 24px;

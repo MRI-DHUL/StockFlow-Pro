@@ -24,15 +24,10 @@ import { AuditLog } from '../../../shared/models/domain.models';
     MatFormFieldModule,
     MatCardModule
   ],
-  template: `
-    <mat-card>
-      <mat-card-header>
-        <mat-card-title>Audit Logs</mat-card-title>
-        <button mat-raised-button color="primary" (click)="exportLogs()">
-          <mat-icon>download</mat-icon>
-          Export Logs
-        </button>
-      </mat-card-header>
+  templateUrl: './audit-log-list.component.html',
+  styleUrls: ['./audit-log-list.component.scss']
+})
+export class AuditLogListComponent implements OnInit {
       <mat-card-content>
         <!-- Filters -->
         <div class="filters-container">
@@ -102,11 +97,22 @@ import { AuditLog } from '../../../shared/models/domain.models';
             <div class="no-data-message">No Data Found</div>
           </div>
         </div>
-      </mat-card-content>
-    </mat-card>
-  `,
-  styles: [`
-    mat-card {
+})export class AuditLogListComponent implements OnInit {
+  private readonly auditLogService = inject(AuditLogService);
+  private readonly toastr = inject(ToastrService);
+  private readonly fb = inject(FormBuilder);
+  private readonly cdr = inject(ChangeDetectorRef);
+
+  auditLogs: AuditLog[] = [];
+  displayedColumns = ['timestamp', 'entityName', 'action', 'performedBy', 'ipAddress', 'changes'];
+
+  filterForm: FormGroup = this.fb.group({
+    entityName: [''],
+    action: ['']
+  });
+
+  ngOnInit(): void {
+    this.loadAuditLogs();
       border-radius: 16px;
       box-shadow: 0 8px 16px rgba(0,0,0,0.1);
       margin: 24px;

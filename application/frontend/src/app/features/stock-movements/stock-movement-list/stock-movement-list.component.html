@@ -1,0 +1,96 @@
+<mat-card>
+  <mat-card-header>
+    <mat-card-title>Stock Movements</mat-card-title>
+    <button mat-raised-button color="accent" (click)="recordMovement()">
+      <mat-icon>add</mat-icon>
+      Record Movement
+    </button>
+  </mat-card-header>
+  <mat-card-content>
+    <!-- Filters -->
+    <div class="filters-container">
+      <form [formGroup]="filterForm" class="filters-form">
+        <mat-form-field appearance="outline">
+          <mat-label>Warehouse</mat-label>
+          <mat-select formControlName="warehouseId">
+            <mat-option value="">All Warehouses</mat-option>
+            <mat-option *ngFor="let warehouse of warehouses" [value]="warehouse.id">
+              {{ warehouse.name }}
+            </mat-option>
+          </mat-select>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline">
+          <mat-label>Movement Type</mat-label>
+          <mat-select formControlName="movementType">
+            <mat-option value="">All Types</mat-option>
+            <mat-option [value]="0">In</mat-option>
+            <mat-option [value]="1">Out</mat-option>
+            <mat-option [value]="2">Transfer</mat-option>
+            <mat-option [value]="3">Adjustment</mat-option>
+          </mat-select>
+        </mat-form-field>
+
+        <button mat-raised-button color="primary" (click)="applyFilters()">
+          <mat-icon>filter_list</mat-icon>
+          Apply
+        </button>
+        <button mat-button (click)="resetFilters()">Reset</button>
+      </form>
+    </div>
+
+    <!-- Table -->
+    <div class="table-container">
+      <table mat-table [dataSource]="movements" class="mat-elevation-z2">
+        <ng-container matColumnDef="movementDate">
+          <th mat-header-cell *matHeaderCellDef>Date</th>
+          <td mat-cell *matCellDef="let movement">{{ movement.movementDate | date:'short' }}</td>
+        </ng-container>
+
+        <ng-container matColumnDef="productName">
+          <th mat-header-cell *matHeaderCellDef>Product</th>
+          <td mat-cell *matCellDef="let movement">{{ movement.productName }}</td>
+        </ng-container>
+
+        <ng-container matColumnDef="warehouseName">
+          <th mat-header-cell *matHeaderCellDef>Warehouse</th>
+          <td mat-cell *matCellDef="let movement">{{ movement.warehouseName }}</td>
+        </ng-container>
+
+        <ng-container matColumnDef="movementType">
+          <th mat-header-cell *matHeaderCellDef>Type</th>
+          <td mat-cell *matCellDef="let movement">
+            <mat-chip [class]="getMovementTypeClass(movement.movementType)">
+              {{ getMovementTypeLabel(movement.movementType) }}
+            </mat-chip>
+          </td>
+        </ng-container>
+
+        <ng-container matColumnDef="quantity">
+          <th mat-header-cell *matHeaderCellDef>Quantity</th>
+          <td mat-cell *matCellDef="let movement">
+            <span [class]="movement.movementType === 1 ? 'qty-out' : 'qty-in'">
+              {{ movement.movementType === 1 ? '-' : '+' }}{{ movement.quantity }}
+            </span>
+          </td>
+        </ng-container>
+
+        <ng-container matColumnDef="referenceNumber">
+          <th mat-header-cell *matHeaderCellDef>Reference #</th>
+          <td mat-cell *matCellDef="let movement">{{ movement.referenceNumber || '-' }}</td>
+        </ng-container>
+
+        <ng-container matColumnDef="notes">
+          <th mat-header-cell *matHeaderCellDef>Notes</th>
+          <td mat-cell *matCellDef="let movement">{{ movement.notes || '-' }}</td>
+        </ng-container>
+
+        <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+        <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+      </table>
+      <div class="no-data-container" *ngIf="movements.length === 0">
+        <div class="no-data-message">No Data Found</div>
+      </div>
+    </div>
+  </mat-card-content>
+</mat-card>

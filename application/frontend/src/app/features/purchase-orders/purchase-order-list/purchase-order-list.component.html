@@ -1,0 +1,96 @@
+<mat-card>
+  <mat-card-header>
+    <mat-card-title>Purchase Orders</mat-card-title>
+    <button mat-raised-button color="accent" (click)="createPurchaseOrder()">
+      <mat-icon>add</mat-icon>
+      Create PO
+    </button>
+  </mat-card-header>
+  <mat-card-content>
+    <!-- Filters -->
+    <div class="filters-container">
+      <form [formGroup]="filterForm" class="filters-form">
+        <mat-form-field appearance="outline">
+          <mat-label>Search PO Number</mat-label>
+          <input matInput formControlName="poNumber" placeholder="Search...">
+        </mat-form-field>
+
+        <mat-form-field appearance="outline">
+          <mat-label>Supplier Name</mat-label>
+          <input matInput formControlName="supplierName" placeholder="Search...">
+        </mat-form-field>
+
+        <mat-form-field appearance="outline">
+          <mat-label>Status</mat-label>
+          <mat-select formControlName="status">
+            <mat-option value="">All Statuses</mat-option>
+            <mat-option [value]="0">Draft</mat-option>
+            <mat-option [value]="1">Submitted</mat-option>
+            <mat-option [value]="2">Approved</mat-option>
+            <mat-option [value]="3">Received</mat-option>
+            <mat-option [value]="4">Cancelled</mat-option>
+          </mat-select>
+        </mat-form-field>
+
+        <button mat-raised-button color="primary" (click)="applyFilters()">
+          <mat-icon>search</mat-icon>
+          Search
+        </button>
+        <button mat-button (click)="resetFilters()">Reset</button>
+      </form>
+    </div>
+
+    <div class="table-container">
+      <table mat-table [dataSource]="purchaseOrders" class="mat-elevation-z2">
+        <ng-container matColumnDef="poNumber">
+          <th mat-header-cell *matHeaderCellDef>PO #</th>
+          <td mat-cell *matCellDef="let po">{{ po.poNumber }}</td>
+        </ng-container>
+
+        <ng-container matColumnDef="orderDate">
+          <th mat-header-cell *matHeaderCellDef>Order Date</th>
+          <td mat-cell *matCellDef="let po">{{ po.orderDate | date:'short' }}</td>
+        </ng-container>
+
+        <ng-container matColumnDef="supplierName">
+          <th mat-header-cell *matHeaderCellDef>Supplier</th>
+          <td mat-cell *matCellDef="let po">{{ po.supplierName }}</td>
+        </ng-container>
+
+        <ng-container matColumnDef="expectedDeliveryDate">
+          <th mat-header-cell *matHeaderCellDef>Expected Delivery</th>
+          <td mat-cell *matCellDef="let po">{{ po.expectedDeliveryDate | date:'short' }}</td>
+        </ng-container>
+
+        <ng-container matColumnDef="totalAmount">
+          <th mat-header-cell *matHeaderCellDef>Total Amount</th>
+          <td mat-cell *matCellDef="let po">{{ po.totalAmount | currency }}</td>
+        </ng-container>
+
+        <ng-container matColumnDef="status">
+          <th mat-header-cell *matHeaderCellDef>Status</th>
+          <td mat-cell *matCellDef="let po">
+            <mat-chip [class]="getStatusClass(po.status)">
+              {{ getStatusLabel(po.status) }}
+            </mat-chip>
+          </td>
+        </ng-container>
+
+        <ng-container matColumnDef="actions">
+          <th mat-header-cell *matHeaderCellDef>Actions</th>
+          <td mat-cell *matCellDef="let po">
+            <button mat-icon-button color="primary" (click)="viewPO(po)">
+              <mat-icon>visibility</mat-icon>
+            </button>
+          </td>
+        </ng-container>
+
+        <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+        <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+      </table>
+      <div class="no-data-container" *ngIf="purchaseOrders.length === 0">
+        <div class="no-data-message">No Data Found</div>
+      </div>
+    </div>
+  </mat-card-content>
+</mat-card>

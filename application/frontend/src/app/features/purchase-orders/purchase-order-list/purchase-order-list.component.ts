@@ -30,15 +30,10 @@ import { CurrencyFormatterPipe } from '../../../shared/pipes/currency-formatter.
     MatChipsModule,
     CurrencyFormatterPipe
   ],
-  template: `
-    <mat-card>
-      <mat-card-header>
-        <mat-card-title>Purchase Orders</mat-card-title>
-        <button mat-raised-button color="accent" (click)="createPurchaseOrder()">
-          <mat-icon>add</mat-icon>
-          Create PO
-        </button>
-      </mat-card-header>
+  templateUrl: './purchase-order-list.component.html',
+  styleUrls: ['./purchase-order-list.component.scss']
+})
+export class PurchaseOrderListComponent implements OnInit {
       <mat-card-content>
         <!-- Filters -->
         <div class="filters-container">
@@ -121,15 +116,24 @@ import { CurrencyFormatterPipe } from '../../../shared/pipes/currency-formatter.
             <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
             <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
           </table>
-          <div class="no-data-container" *ngIf="purchaseOrders.length === 0">
-            <div class="no-data-message">No Data Found</div>
-          </div>
-        </div>
-      </mat-card-content>
-    </mat-card>
-  `,
-  styles: [`
-    mat-card {
+})export class PurchaseOrderListComponent implements OnInit {
+  private readonly purchaseOrderService = inject(PurchaseOrderService);
+  private readonly toastr = inject(ToastrService);
+  private readonly cdr = inject(ChangeDetectorRef);
+  private readonly fb = inject(FormBuilder);
+
+  purchaseOrders: PurchaseOrder[] = [];
+  allPurchaseOrders: PurchaseOrder[] = [];
+  displayedColumns = ['poNumber', 'orderDate', 'supplierName', 'expectedDeliveryDate', 'totalAmount', 'status', 'actions'];
+
+  filterForm: FormGroup = this.fb.group({
+    poNumber: [''],
+    supplierName: [''],
+    status: ['']
+  });
+
+  ngOnInit(): void {
+    this.loadPurchaseOrders();
       border-radius: 16px;
       box-shadow: 0 8px 16px rgba(0,0,0,0.1);
       margin: 24px;

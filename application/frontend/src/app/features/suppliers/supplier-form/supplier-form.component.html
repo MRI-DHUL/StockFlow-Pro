@@ -1,0 +1,53 @@
+<h2 mat-dialog-title>{{ isEditMode ? 'Edit Supplier' : 'Add Supplier' }}</h2>
+<mat-dialog-content>
+  <form [formGroup]="supplierForm" class="supplier-form">
+    <mat-form-field appearance="outline">
+      <mat-label>Supplier Name</mat-label>
+      <input matInput formControlName="name" placeholder="Enter supplier name">
+      <mat-error *ngIf="supplierForm.get('name')?.hasError('required')">
+        Supplier name is required
+      </mat-error>
+    </mat-form-field>
+
+    <mat-form-field appearance="outline">
+      <mat-label>Contact Person</mat-label>
+      <input matInput formControlName="contactPerson" placeholder="Enter contact person">
+      <mat-error *ngIf="supplierForm.get('contactPerson')?.hasError('required')">
+        Contact person is required
+      </mat-error>
+    </mat-form-field>
+
+    <mat-form-field appearance="outline">
+      <mat-label>Email</mat-label>
+      <input matInput type="email" formControlName="email" placeholder="Enter email">
+      <mat-error *ngIf="supplierForm.get('email')?.hasError('required')">
+        Email is required
+      </mat-error>
+      <mat-error *ngIf="supplierForm.get('email')?.hasError('email')">
+        Invalid email format
+      </mat-error>
+    </mat-form-field>
+
+    <mat-form-field appearance="outline">
+      <mat-label>Phone</mat-label>
+      <input matInput formControlName="phone" placeholder="Enter phone number">
+      <mat-error *ngIf="supplierForm.get('phone')?.hasError('required')">
+        Phone is required
+      </mat-error>
+    </mat-form-field>
+
+    <mat-form-field appearance="outline">
+      <mat-label>Address</mat-label>
+      <textarea matInput formControlName="address" rows="3" placeholder="Enter address"></textarea>
+      <mat-error *ngIf="supplierForm.get('address')?.hasError('required')">
+        Address is required
+      </mat-error>
+    </mat-form-field>
+  </form>
+</mat-dialog-content>
+<mat-dialog-actions align="end">
+  <button mat-button (click)="onCancel()">Cancel</button>
+  <button mat-raised-button color="primary" (click)="onSubmit()" [disabled]="!supplierForm.valid || isSubmitting">
+    {{ isSubmitting ? 'Saving...' : 'Save' }}
+  </button>
+</mat-dialog-actions>

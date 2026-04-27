@@ -24,44 +24,89 @@ import { WarehouseService } from '../../core/services/warehouse.service';
     MatButtonModule,
     MatTableModule
   ],
-  template: `
-    <div class="dashboard">
-      <div class="dashboard-header">
-        <div class="header-content">
-          <h1>Welcome back!</h1>
-          <p class="subtitle">Here's what's happening with your inventory today.</p>
-        </div>
-        <div class="header-actions">
-          <button mat-raised-button color="primary" routerLink="/products">
-            <mat-icon>add</mat-icon>
-            New Product
-          </button>
-        </div>
-      </div>
+  templateUrl: './dashboard.component.html',
+  styleUrls: ['./dashboard.component.scss']
+})
+export class DashboardComponent implements OnInit {
+  private readonly authService = inject(AuthService);
+  private readonly pusherService = inject(PusherService);
+  private readonly productService = inject(ProductService);
+  private readonly inventoryService = inject(InventoryService);
+  private readonly orderService = inject(OrderService);
+  private readonly warehouseService = inject(WarehouseService);
+  private readonly toastr = inject(ToastrService);
+  private readonly cdr = inject(ChangeDetectorRef);
 
-      <!-- Stats Cards -->
-      <div class="stats-grid">
-        <mat-card class="stat-card products-card">
-          <div class="card-icon-wrapper">
-            <mat-icon class="card-icon">inventory_2</mat-icon>
-          </div>
-          <div class="card-content">
-            <p class="card-label">Total Products</p>
-            <h2 class="card-value">{{ stats.totalProducts }}</h2>
-            <span class="card-trend positive">
-              <mat-icon>trending_up</mat-icon>
-              +12% from last month
-            </span>
-          </div>
-        </mat-card>
+  currentUser = this.authService.currentUser;
+  notifications: PusherNotification[] = [];
+  
+  stats = {
+    totalProducts: 0,
+    totalWarehouses: 0,
+    lowStockItems: 0,
+    pendingOrders: 0
+  };
 
-        <mat-card class="stat-card warehouses-card">
-          <div class="card-icon-wrapper">
-            <mat-icon class="card-icon">store</mat-icon>
-          </div>
-          <div class="card-content">
-            <p class="card-label">Active Warehouses</p>
-            <h2 class="card-value">{{ stats.totalWarehouses }}</h2>
+  ngOnInit(): void {
+    this.loadStats();
+    
+    // Subscribe to Pusher notifications
+    this.pusherService.notifications$.subscribe(notification => {
+      this.notifications = [notification, ...this.notifications].slice(0, 10);
+      this.toastr.info(notification.message, 'Notification');
+    });
+  }
+
+  loadStats(): void {
+    // Load products count
+    this.productService.getPaged({ pageSize: 1, pageNumber: 1 }).subscribe({
+      next: (response) => {
+        this.stats.totalProducts = response.totalCount;
+        this.cdr.detectChanges();
+      },
+      error: (error) => console.error('Failed to load products stats', error)
+    });
+
+    // Load warehouses count
+    this.warehouseService.getAll().subscribe({
+      next: (warehouses) => {
+        this.stats.totalWarehouses = warehouses.length;
+        this.cdr.detectChanges();
+      },
+      error: (error) => console.error('Failed to load warehouses stats', error)
+    });
+
+    // Load low stock items
+    this.inventoryService.getLowStock().subscribe({
+      next: (items) => {
+        this.stats.lowStockItems = items.length;
+        this.cdr.detectChanges();
+      },
+      error: (error) => console.error('Failed to load low stock stats', error)
+    });
+
+    // Load pending orders count
+    this.orderService.getPaged({ status: 0, pageSize: 1, pageNumber: 1 }).subscribe({
+      next: (response) => {
+        this.stats.pendingOrders = response.totalCount;
+        this.cdr.detectChanges();
+      },
+      error: (error) => console.error('Failed to load orders stats', error)
+    });
+  }
+
+  getNotificationIcon(type: string): string {
+    const iconMap: { [key: string]: string } = {
+      'info': 'info',
+      'success': 'check_circle',
+      'warning': 'warning',
+      'error': 'error',
+      'low-stock': 'inventory',
+      'order': 'shopping_cart'
+    };
+    return iconMap[type] || 'notifications';
+  }
+}
             <span class="card-trend neutral">
               <mat-icon>remove</mat-icon>
               No change
