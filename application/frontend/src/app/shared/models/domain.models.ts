@@ -58,6 +58,7 @@ export interface Order {
   orderNumber: string;
   customerId?: string;
   customerName?: string;
+  customerEmail?: string;
   status: OrderStatus;
   totalAmount: number;
   createdAt: Date;
@@ -78,6 +79,7 @@ export interface OrderItem {
 export interface CreateOrderDto {
   customerId?: string;
   customerName?: string;
+  customerEmail?: string;
   shippingAddress?: string;
   notes?: string;
   orderItems: CreateOrderItemDto[];

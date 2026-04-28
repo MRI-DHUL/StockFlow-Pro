@@ -7,9 +7,11 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatCardModule } from '@angular/material/card';
+import { MatDialog } from '@angular/material/dialog';
 import { ToastrService } from 'ngx-toastr';
 import { AuditLogService } from '../../../core/services/audit-log.service';
 import { AuditLog } from '../../../shared/models/domain.models';
+import { AuditLogChangesDialogComponent } from '../audit-log-changes-dialog/audit-log-changes-dialog.component';
 
 @Component({
   selector: 'app-audit-log-list',
@@ -32,6 +34,7 @@ export class AuditLogListComponent implements OnInit {
   private readonly toastr = inject(ToastrService);
   private readonly fb = inject(FormBuilder);
   private readonly cdr = inject(ChangeDetectorRef);
+  private readonly dialog = inject(MatDialog);
 
   auditLogs: AuditLog[] = [];
   displayedColumns = ['timestamp', 'entityName', 'action', 'performedBy', 'ipAddress', 'changes'];
@@ -68,8 +71,40 @@ export class AuditLogListComponent implements OnInit {
   }
 
   exportLogs(): void {
-    this.toastr.info('Export Logs functionality coming soon', 'Info');
-    // TODO: Implement logs export functionality
+    if (this.auditLogs.length === 0) {
+      this.toastr.warning('No logs to export', 'Warning');
+      return;
+    }
+
+    // Create CSV content
+    const headers = ['Timestamp', 'Entity Name', 'Entity ID', 'Action', 'Performed By', 'IP Address'];
+    const csvRows = [headers.join(',')];
+
+    this.auditLogs.forEach(log => {
+      const row = [
+        new Date(log.timestamp).toISOString(),
+        log.entityName,
+        log.entityId,
+        log.action,
+        log.userName || 'System',
+        log.ipAddress || 'N/A'
+      ];
+      csvRows.push(row.map(field => `"${String(field).replace(/"/g, '""')}"`).join(','));
+    });
+
+    const csvContent = csvRows.join('\n');
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    const url = URL.createObjectURL(blob);
+    
+    link.setAttribute('href', url);
+    link.setAttribute('download', `audit-logs-${new Date().toISOString().split('T')[0]}.csv`);
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+
+    this.toastr.success('Audit logs exported successfully', 'Success');
   }
 
   applyFilters(): void {
@@ -82,8 +117,11 @@ export class AuditLogListComponent implements OnInit {
   }
 
   viewChanges(log: AuditLog): void {
-    this.toastr.info(`Viewing changes for ${log.entityName}`, 'Info');
-    // TODO: Implement changes dialog
+    this.dialog.open(AuditLogChangesDialogComponent, {
+      width: '800px',
+      maxWidth: '90vw',
+      data: log
+    });
   }
 
   getActionClass(action: string): string {

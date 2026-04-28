@@ -1,0 +1,17 @@
+.movement-form {
+  min-width: 500px;
+  max-width: 600px;
+  padding: 20px 0;
+}
+
+.form-section {
+  .full-width {
+    width: 100%;
+    margin-bottom: 16px;
+  }
+}
+
+mat-dialog-content {
+  max-height: 70vh;
+  overflow-y: auto;
+}

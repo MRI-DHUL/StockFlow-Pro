@@ -1,6 +1,7 @@
 using FluentValidation;
 using MapsterMapper;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using StockFlow.Application.DTOs;
 using StockFlow.Application.Extensions;
 using StockFlow.Application.Interfaces;
@@ -15,17 +16,26 @@ public class OrderService : IOrderService
     private readonly IMapper _mapper;
     private readonly IValidator<CreateOrderDto> _createValidator;
     private readonly IValidator<UpdateOrderDto> _updateValidator;
+    private readonly IEmailService _emailService;
+    private readonly INotificationService _notificationService;
+    private readonly ILogger<OrderService> _logger;
 
     public OrderService(
         IUnitOfWork unitOfWork,
         IMapper mapper,
         IValidator<CreateOrderDto> createValidator,
-        IValidator<UpdateOrderDto> updateValidator)
+        IValidator<UpdateOrderDto> updateValidator,
+        IEmailService emailService,
+        INotificationService notificationService,
+        ILogger<OrderService> logger)
     {
         _unitOfWork = unitOfWork;
         _mapper = mapper;
         _createValidator = createValidator;
         _updateValidator = updateValidator;
+        _emailService = emailService;
+        _notificationService = notificationService;
+        _logger = logger;
     }
 
     public async Task<PagedResult<OrderDto>> GetPagedAsync(OrderFilterParams filterParams, CancellationToken cancellationToken = default)
@@ -151,6 +161,56 @@ public class OrderService : IOrderService
             .Include(o => o.OrderItems)
             .ThenInclude(oi => oi.Product)
             .FirstOrDefaultAsync(o => o.Id == order.Id, cancellationToken);
+
+        // Send order confirmation email and notification
+        if (!string.IsNullOrWhiteSpace(createOrderDto.CustomerEmail))
+        {
+            try
+            {
+                await _emailService.SendOrderConfirmationAsync(
+                    createOrderDto.CustomerEmail,
+                    createOrderDto.CustomerName ?? "Customer",
+                    order.Id,
+                    order.TotalAmount,
+                    cancellationToken);
+
+                _logger.LogInformation(
+                    "Order confirmation email sent to {CustomerEmail} for order {OrderId}",
+                    createOrderDto.CustomerEmail, order.Id);
+            }
+            catch (Exception emailEx)
+            {
+                _logger.LogError(emailEx,
+                    "Failed to send order confirmation email to {CustomerEmail} for order {OrderId}",
+                    createOrderDto.CustomerEmail, order.Id);
+                // Don't fail the order creation if email fails
+            }
+        }
+
+        // Send real-time notification via Pusher
+        try
+        {
+            await _notificationService.SendNotificationAsync(
+                "stockflow-notifications",
+                "order-placed",
+                new
+                {
+                    type = "order-placed",
+                    orderId = order.Id,
+                    orderNumber = order.OrderNumber,
+                    customerName = order.CustomerName,
+                    totalAmount = order.TotalAmount,
+                    timestamp = DateTime.UtcNow
+                });
+
+            _logger.LogInformation("Order placed notification sent for order {OrderId}", order.Id);
+        }
+        catch (Exception notificationEx)
+        {
+            _logger.LogError(notificationEx,
+                "Failed to send order placed notification for order {OrderId}", order.Id);
+            // Don't fail the order creation if notification fails
+        }
 
         return result != null ? _mapper.Map<OrderDto>(result) : throw new InvalidOperationException("Failed to create order");
     }

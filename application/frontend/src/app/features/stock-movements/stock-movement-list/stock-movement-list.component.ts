@@ -9,11 +9,13 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatSelectModule } from '@angular/material/select';
 import { MatCardModule } from '@angular/material/card';
 import { MatChipsModule } from '@angular/material/chips';
+import { MatDialog } from '@angular/material/dialog';
 import { ToastrService } from 'ngx-toastr';
 import { StockMovementService } from '../../../core/services/stock-movement.service';
 import { WarehouseService } from '../../../core/services/warehouse.service';
 import { ProductService } from '../../../core/services/product.service';
 import { StockMovement, MovementType } from '../../../shared/models/domain.models';
+import { StockMovementFormComponent } from '../stock-movement-form/stock-movement-form.component';
 
 @Component({
   selector: 'app-stock-movement-list',
@@ -39,6 +41,7 @@ export class StockMovementListComponent implements OnInit {
   private readonly toastr = inject(ToastrService);
   private readonly fb = inject(FormBuilder);
   private readonly cdr = inject(ChangeDetectorRef);
+  private readonly dialog = inject(MatDialog);
 
   movements: StockMovement[] = [];
   warehouses: any[] = [];
@@ -86,8 +89,17 @@ export class StockMovementListComponent implements OnInit {
   }
 
   recordMovement(): void {
-    this.toastr.info('Record Movement functionality coming soon', 'Info');
-    // TODO: Implement movement recording dialog
+    const dialogRef = this.dialog.open(StockMovementFormComponent, {
+      width: '600px',
+      maxWidth: '90vw',
+      disableClose: true
+    });
+
+    dialogRef.afterClosed().subscribe(result => {
+      if (result) {
+        this.loadMovements();
+      }
+    });
   }
 
   applyFilters(): void {

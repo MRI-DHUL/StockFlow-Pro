@@ -9,10 +9,13 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatSelectModule } from '@angular/material/select';
 import { MatCardModule } from '@angular/material/card';
 import { MatChipsModule } from '@angular/material/chips';
+import { MatDialog } from '@angular/material/dialog';
 import { ToastrService } from 'ngx-toastr';
 import { PurchaseOrderService } from '../../../core/services/purchase-order.service';
 import { PurchaseOrder, PurchaseOrderStatus } from '../../../shared/models/domain.models';
 import { CurrencyFormatterPipe } from '../../../shared/pipes/currency-formatter.pipe';
+import { PurchaseOrderFormComponent } from '../purchase-order-form/purchase-order-form.component';
+import { PurchaseOrderDetailsComponent } from '../purchase-order-details/purchase-order-details.component';
 
 @Component({
   selector: 'app-purchase-order-list',
@@ -38,6 +41,7 @@ export class PurchaseOrderListComponent implements OnInit {
   private readonly toastr = inject(ToastrService);
   private readonly cdr = inject(ChangeDetectorRef);
   private readonly fb = inject(FormBuilder);
+  private readonly dialog = inject(MatDialog);
 
   purchaseOrders: PurchaseOrder[] = [];
   allPurchaseOrders: PurchaseOrder[] = [];
@@ -96,13 +100,25 @@ export class PurchaseOrderListComponent implements OnInit {
   }
 
   createPO(): void {
-    this.toastr.info('Create Purchase Order functionality coming soon', 'Info');
-    // TODO: Implement PO creation dialog
+    const dialogRef = this.dialog.open(PurchaseOrderFormComponent, {
+      width: '800px',
+      maxWidth: '90vw',
+      disableClose: true
+    });
+
+    dialogRef.afterClosed().subscribe(result => {
+      if (result) {
+        this.loadPurchaseOrders();
+      }
+    });
   }
 
   viewPO(po: PurchaseOrder): void {
-    this.toastr.info(`Viewing PO ${po.poNumber}`, 'Info');
-    // TODO: Implement PO details dialog
+    this.dialog.open(PurchaseOrderDetailsComponent, {
+      width: '800px',
+      maxWidth: '90vw',
+      data: po
+    });
   }
 
   getStatusLabel(status: PurchaseOrderStatus): string {

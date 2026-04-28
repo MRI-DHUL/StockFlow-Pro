@@ -9,12 +9,15 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatSelectModule } from '@angular/material/select';
 import { MatCardModule } from '@angular/material/card';
 import { MatChipsModule } from '@angular/material/chips';
+import { MatDialog } from '@angular/material/dialog';
 import { ToastrService } from 'ngx-toastr';
 import { OrderService } from '../../../core/services/order.service';
 import { Order, OrderStatus } from '../../../shared/models/domain.models';
 import { PagedResponse } from '../../../core/models/auth.models';
 import { PaginationComponent } from '../../../shared/components/pagination.component';
 import { CurrencyFormatterPipe } from '../../../shared/pipes/currency-formatter.pipe';
+import { OrderFormComponent } from '../order-form/order-form.component';
+import { OrderDetailsComponent } from '../order-details/order-details.component';
 
 @Component({
   selector: 'app-order-list',
@@ -41,6 +44,7 @@ export class OrderListComponent implements OnInit {
   private readonly toastr = inject(ToastrService);
   private readonly fb = inject(FormBuilder);
   private readonly cdr = inject(ChangeDetectorRef);
+  private readonly dialog = inject(MatDialog);
 
   orders: Order[] = [];
   totalCount = 0;
@@ -88,8 +92,17 @@ export class OrderListComponent implements OnInit {
   }
 
   createOrder(): void {
-    this.toastr.info('Create Order functionality coming soon', 'Info');
-    // TODO: Implement order creation dialog
+    const dialogRef = this.dialog.open(OrderFormComponent, {
+      width: '700px',
+      maxWidth: '90vw',
+      disableClose: true
+    });
+
+    dialogRef.afterClosed().subscribe(result => {
+      if (result) {
+        this.loadOrders();
+      }
+    });
   }
 
   applyFilters(): void {
@@ -110,8 +123,11 @@ export class OrderListComponent implements OnInit {
   }
 
   viewOrder(order: Order): void {
-    this.toastr.info(`Viewing order ${order.orderNumber}`, 'Info');
-    // TODO: Implement order details dialog
+    this.dialog.open(OrderDetailsComponent, {
+      width: '800px',
+      maxWidth: '90vw',
+      data: order
+    });
   }
 
   getStatusLabel(status: OrderStatus): string {
