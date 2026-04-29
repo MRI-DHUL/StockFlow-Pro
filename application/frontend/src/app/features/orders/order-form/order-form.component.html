@@ -30,7 +30,7 @@
             <mat-label>Product</mat-label>
             <mat-select formControlName="productId" required>
               <mat-option *ngFor="let product of products" [value]="product.id">
-                {{product.name}} - ${{product.unitPrice | number:'1.2-2'}}
+                {{product.name}} - ₹{{product.unitPrice | number:'1.2-2'}}
               </mat-option>
             </mat-select>
             <mat-error>Product is required</mat-error>
@@ -56,7 +56,7 @@
     </div>
 
     <div class="total-section">
-      <h3>Total Amount: ${{calculateTotal() | number:'1.2-2'}}</h3>
+      <h3>Total Amount: ₹{{calculateTotal() | number:'1.2-2'}}</h3>
     </div>
   </form>
 </mat-dialog-content>
