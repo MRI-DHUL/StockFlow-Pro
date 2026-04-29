@@ -86,6 +86,6 @@ test.describe('Authentication', () => {
     await page.locator('button[aria-label=\"Logout\"], button:has-text(\"Logout\")').click();
     
     // Verify redirected to login
-    await expect(page).toHaveURL(/.*auth\\/login/, { timeout: 10000 });
+    await expect(page).toHaveURL(/.*auth\/login/, { timeout: 10000 });
   });
 });
