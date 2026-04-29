@@ -1,0 +1,1761 @@
+================================================================================
+                   STOCKFLOW PRO FRONTEND - COMPREHENSIVE OVERVIEW
+================================================================================
+
+Date: April 29, 2026
+Technology: Angular 21 | TypeScript 5.9 | Material Design 21
+Status: Production-Ready (Fully Functional)
+
+================================================================================
+                           ARCHITECTURE & TECHNOLOGY STACK
+================================================================================
+
+MODERN ANGULAR ARCHITECTURE
+----------------------------
+
+The frontend is built using Angular 21 with the latest standalone components 
+architecture, featuring:
+
+┌─────────────────────────────────────────────────────────┐
+│                    Browser (User Interface)              │
+│          Angular 21 SPA with Material Design             │
+└────────────────┬────────────────────────────────────────┘
+                 │ HTTP/WebSocket
+                 ↓
+┌─────────────────────────────────────────────────────────┐
+│                  Core Layer (Services)                   │
+│  API Services, Auth, Guards, Interceptors, Models       │
+└────────────────┬────────────────────────────────────────┘
+                 │ Data Flow
+                 ↓
+┌─────────────────────────────────────────────────────────┐
+│              Features Layer (Components)                 │
+│   10 Feature Modules (Lazy Loaded Components)           │
+└────────────────┬────────────────────────────────────────┘
+                 │ Reusable UI
+                 ↓
+┌─────────────────────────────────────────────────────────┐
+│              Shared Layer (Common Code)                  │
+│   Components, Pipes, Models, Utilities                  │
+└─────────────────────────────────────────────────────────┘
+
+Architecture Pattern: Component-Based Architecture with Services Layer
+Rendering: Client-Side Rendering (SPA - Single Page Application)
+State Management: RxJS BehaviorSubject + Observables
+
+================================================================================
+                        TECHNOLOGY STACK & RATIONALE
+================================================================================
+
+CORE FRAMEWORK
+--------------
+• Angular 21 - Latest version with standalone components architecture
+  WHY? Modern framework, full-featured, enterprise-ready, TypeScript native
+
+• TypeScript 5.9 - Static typing, latest features
+  WHY? Type safety, better IDE support, fewer runtime errors
+
+• RxJS 7.8 - Reactive programming library
+  WHY? Async data streams, powerful operators, state management
+
+RENDERING & BUILD
+-----------------
+• Angular Build System (esbuild) - Fast build optimization
+  WHY? 10x faster than webpack, better dev experience
+
+• Standalone Components - No NgModules required
+  WHY? Simpler architecture, better tree-shaking, smaller bundles
+
+• Lazy Loading - Route-based code splitting
+  WHY? Faster initial load, load features on demand
+
+UI FRAMEWORK
+------------
+• Angular Material 21 - Official Material Design components
+  WHY? Comprehensive, accessible, consistent design, well-maintained
+
+• Material Icons - Google's icon library
+  WHY? 1000+ icons, consistent style, web font delivery
+
+• Custom SCSS - Gradient theming with CSS variables
+  WHY? Flexible styling, maintainable, responsive design
+
+REAL-TIME COMMUNICATION
+-----------------------
+• Pusher JS 8.5 - WebSocket client for real-time notifications
+  WHY? Reliable, scalable, easy to use, managed service
+
+• HTTP Client - Angular's built-in HTTP module
+  WHY? Observable-based, interceptor support, type-safe
+
+NOTIFICATIONS & UX
+------------------
+• ngx-toastr 20.0 - Toast notification library
+  WHY? User-friendly alerts, customizable, non-blocking
+
+• Angular Animations - Built-in animation module
+  WHY? Smooth transitions, fade-in effects, professional UX
+
+ROUTING & NAVIGATION
+--------------------
+• Angular Router - Built-in routing solution
+  WHY? Lazy loading, guards, route parameters, query params
+
+• Route Guards - CanActivate for authentication
+  WHY? Protect routes, redirect unauthorized users
+
+FORMS & VALIDATION
+------------------
+• Reactive Forms - Model-driven form approach
+  WHY? Type-safe, testable, complex validation support
+
+• Built-in Validators - Angular's validation system
+  WHY? Common validations (required, email, pattern, min, max)
+
+TESTING
+-------
+• Playwright 1.59 - End-to-end testing framework
+  WHY? Multi-browser support, reliable, modern API, fast execution
+
+• 40+ E2E test cases covering:
+  - Authentication flows
+  - CRUD operations
+  - Navigation
+  - User journeys
+
+================================================================================
+                          PROJECT STRUCTURE EXPLAINED
+================================================================================
+
+application/frontend/
+├── src/
+│   ├── app/
+│   │   ├── core/                    # Singleton services, guards, interceptors
+│   │   │   ├── services/            # 10 API services
+│   │   │   │   ├── auth.service.ts           # Authentication & JWT
+│   │   │   │   ├── product.service.ts        # Product CRUD
+│   │   │   │   ├── inventory.service.ts      # Inventory management
+│   │   │   │   ├── warehouse.service.ts      # Warehouse operations
+│   │   │   │   ├── supplier.service.ts       # Supplier management
+│   │   │   │   ├── order.service.ts          # Order processing
+│   │   │   │   ├── purchase-order.service.ts # PO handling
+│   │   │   │   ├── stock-movement.service.ts # Stock tracking
+│   │   │   │   ├── audit-log.service.ts      # Audit viewing
+│   │   │   │   └── pusher.service.ts         # Real-time notifications
+│   │   │   │
+│   │   │   ├── guards/              # Route protection
+│   │   │   │   └── auth.guard.ts             # Check if user authenticated
+│   │   │   │
+│   │   │   ├── interceptors/        # HTTP request/response handling
+│   │   │   │   └── auth.interceptor.ts       # Add JWT to requests
+│   │   │   │
+│   │   │   └── models/              # TypeScript interfaces
+│   │   │       └── auth.models.ts            # User, Login, Register types
+│   │   │
+│   │   ├── features/                # Feature modules (lazy loaded)
+│   │   │   ├── auth/                # Authentication
+│   │   │   │   ├── login/                    # Login page
+│   │   │   │   └── register/                 # Registration page
+│   │   │   │
+│   │   │   ├── dashboard/           # Dashboard with stats
+│   │   │   │   ├── dashboard.component.ts    # Main dashboard
+│   │   │   │   ├── dashboard.component.html
+│   │   │   │   └── dashboard.component.scss  # Gradient styling
+│   │   │   │
+│   │   │   ├── products/            # Product management
+│   │   │   │   ├── product-list/             # List with filters
+│   │   │   │   ├── product-form/             # Create/Edit form
+│   │   │   │   └── product-dialog/           # Modal dialog
+│   │   │   │
+│   │   │   ├── inventory/           # Inventory management
+│   │   │   │   ├── inventory-list/           # Stock levels
+│   │   │   │   └── inventory-update/         # Quantity updates
+│   │   │   │
+│   │   │   ├── warehouses/          # Warehouse management
+│   │   │   │   ├── warehouse-list/           # All warehouses
+│   │   │   │   └── warehouse-form/           # Create/Edit
+│   │   │   │
+│   │   │   ├── suppliers/           # Supplier management
+│   │   │   │   ├── supplier-list/            # All suppliers
+│   │   │   │   └── supplier-form/            # Create/Edit
+│   │   │   │
+│   │   │   ├── orders/              # Order management
+│   │   │   │   ├── order-list/               # All orders
+│   │   │   │   └── order-details/            # Order view
+│   │   │   │
+│   │   │   ├── purchase-orders/     # Purchase order management
+│   │   │   │   ├── purchase-order-list/      # All POs
+│   │   │   │   └── purchase-order-details/   # PO view
+│   │   │   │
+│   │   │   ├── stock-movements/     # Stock movement tracking
+│   │   │   │   └── stock-movement-list/      # Movement history
+│   │   │   │
+│   │   │   └── audit-logs/          # Audit log viewing
+│   │   │       └── audit-log-list/           # System activity
+│   │   │
+│   │   ├── shared/                  # Reusable components, pipes, models
+│   │   │   ├── components/          # Common UI components
+│   │   │   │   ├── layout.component.ts       # Main layout with sidebar
+│   │   │   │   ├── pagination.component.ts   # Pagination controls
+│   │   │   │   ├── confirm-dialog.component.ts # Confirmation dialogs
+│   │   │   │   └── loading-spinner.component.ts # Loading indicator
+│   │   │   │
+│   │   │   ├── pipes/               # Custom data formatters
+│   │   │   │   ├── currency-formatter.pipe.ts
+│   │   │   │   └── date-formatter.pipe.ts
+│   │   │   │
+│   │   │   └── models/              # Domain models
+│   │   │       └── domain.models.ts          # Product, Order, etc.
+│   │   │
+│   │   ├── app.config.ts            # Application configuration
+│   │   ├── app.routes.ts            # Route definitions
+│   │   ├── app.ts                   # Root component
+│   │   └── app.scss                 # Global styles
+│   │
+│   ├── environments/                # Environment configurations
+│   │   ├── environment.ts           # Development config
+│   │   └── environment.prod.ts      # Production config
+│   │
+│   ├── styles.scss                  # Global styles
+│   └── index.html                   # HTML entry point
+│
+├── e2e/                             # Playwright E2E tests
+│   ├── tests/                       # 40+ test cases
+│   ├── fixtures/                    # Test data
+│   └── helpers/                     # Test utilities
+│
+├── angular.json                     # Angular CLI configuration
+├── package.json                     # Dependencies
+├── tsconfig.json                    # TypeScript configuration
+└── playwright.config.ts             # E2E test configuration
+
+================================================================================
+                           CORE LAYER - SERVICES EXPLAINED
+================================================================================
+
+1. AUTH SERVICE (Authentication & Authorization)
+=================================================
+
+Location: src/app/core/services/auth.service.ts
+
+Purpose: Handles user authentication, JWT token management, session state
+
+Key Features:
+-------------
+• Login/Register functionality
+• JWT token storage in localStorage
+• Refresh token mechanism
+• Auto-logout on token expiration
+• Current user state management (BehaviorSubject)
+• Token expiry checking
+
+Methods:
+--------
+- login(credentials)           → POST /api/v1/auth/login
+- register(userData)           → POST /api/v1/auth/register
+- logout()                     → Clear tokens, navigate to login
+- refreshToken()               → POST /api/v1/auth/refresh
+- getToken()                   → Get JWT from localStorage
+- isAuthenticated              → Check if token valid and not expired
+- currentUser$                 → Observable of current user
+
+How JWT Works:
+--------------
+1. User logs in with email/password
+2. Backend returns: { token, refreshToken, user, expiration }
+3. Frontend stores in localStorage:
+   - access_token (15-min expiry)
+   - refresh_token (7-day expiry)
+   - current_user (user object)
+4. Every API request includes: Authorization: Bearer <token>
+5. When token expires → Use refresh token to get new token
+6. If refresh fails → Logout user
+
+Token Expiry Check:
+-------------------
+isAuthenticated getter:
+  1. Get token from localStorage
+  2. Decode JWT payload (base64)
+  3. Check exp claim: payload.exp * 1000 > Date.now()
+  4. Return true if not expired
+
+State Management:
+-----------------
+private currentUserSubject = new BehaviorSubject<User | null>(null);
+public currentUser$ = this.currentUserSubject.asObservable();
+
+Components subscribe to currentUser$ to get user info in real-time.
+
+--------------------------------------------------------------------------------
+
+2. PRODUCT SERVICE (Product Management)
+========================================
+
+Location: src/app/core/services/product.service.ts
+
+Purpose: CRUD operations for products with pagination and filtering
+
+API Endpoints:
+--------------
+- GET /api/v1/products/paged      → Paginated list with filters
+- GET /api/v1/products            → All products
+- GET /api/v1/products/{id}       → Single product
+- POST /api/v1/products           → Create product
+- PUT /api/v1/products/{id}       → Update product
+- DELETE /api/v1/products/{id}    → Delete product
+- GET /api/v1/products/categories → All categories
+
+Filters Supported:
+------------------
+• searchTerm - Search by name, SKU, description
+• category - Filter by category
+• minPrice / maxPrice - Price range filter
+• pageNumber / pageSize - Pagination
+• sortBy / sortDescending - Sorting
+
+Example Usage in Component:
+----------------------------
+this.productService.getPaged({
+  searchTerm: 'laptop',
+  category: 'Electronics',
+  minPrice: 500,
+  maxPrice: 2000,
+  pageNumber: 1,
+  pageSize: 20,
+  sortBy: 'unitPrice',
+  sortDescending: false
+}).subscribe(response => {
+  this.products = response.items;
+  this.totalCount = response.totalCount;
+});
+
+Response Structure:
+-------------------
+{
+  items: Product[],
+  pageNumber: 1,
+  pageSize: 20,
+  totalCount: 150,
+  totalPages: 8
+}
+
+--------------------------------------------------------------------------------
+
+3. INVENTORY SERVICE (Stock Management)
+========================================
+
+Location: src/app/core/services/inventory.service.ts
+
+Purpose: Manage inventory levels across warehouses, low stock alerts
+
+API Endpoints:
+--------------
+- GET /api/v1/inventory/paged       → Paginated inventory
+- GET /api/v1/inventory             → All inventory
+- GET /api/v1/inventory/{id}        → Single inventory
+- GET /api/v1/inventory/low-stock   → Items below threshold
+- PUT /api/v1/inventory/{id}        → Update quantity
+
+Low Stock Detection:
+--------------------
+Backend automatically checks: quantity < threshold
+Frontend displays pulsing red indicator for low stock items
+
+Filters Supported:
+------------------
+• productId - Filter by product
+• warehouseId - Filter by warehouse
+• minQty / maxQty - Quantity range
+
+--------------------------------------------------------------------------------
+
+4. PUSHER SERVICE (Real-Time Notifications)
+============================================
+
+Location: src/app/core/services/pusher.service.ts
+
+Purpose: WebSocket connection for real-time notifications
+
+Configuration:
+--------------
+Pusher.init({
+  appKey: '3a6db031b2381d1e78ec',
+  cluster: 'ap2'
+})
+Channel: 'stockflow-notifications'
+
+Events Listened:
+----------------
+1. low-stock-alert
+   → Triggered when inventory < threshold
+   → Shows warning toast
+   
+2. order-placed
+   → Triggered when new order created
+   → Shows info toast
+   
+3. stock-update
+   → Triggered when stock quantity changes
+   → Shows success toast
+   
+4. system-test
+   → Test notification from backend
+
+How It Works:
+-------------
+1. Service initializes Pusher on app startup
+2. Subscribes to channel 'stockflow-notifications'
+3. Binds event handlers for each event type
+4. Emits notifications via RxJS Subject
+5. Components subscribe to notifications$ observable
+6. Display toast messages to user
+
+Usage in Component:
+-------------------
+constructor(private pusherService: PusherService) {
+  this.pusherService.notifications$.subscribe(notification => {
+    this.toastr.info(notification.message, notification.title);
+  });
+}
+
+Notification Structure:
+-----------------------
+{
+  title: string,
+  message: string,
+  type: 'info' | 'success' | 'warning' | 'error',
+  timestamp: Date,
+  data?: any
+}
+
+--------------------------------------------------------------------------------
+
+5. OTHER API SERVICES (Similar Pattern)
+========================================
+
+All services follow the same pattern:
+- Inject HttpClient
+- Define API base URL from environment
+- Provide CRUD methods returning Observables
+- Handle errors (caught by interceptor)
+- Type-safe with TypeScript interfaces
+
+Services:
+---------
+• WarehouseService - Warehouse CRUD
+• SupplierService - Supplier CRUD
+• OrderService - Order management with status filters
+• PurchaseOrderService - PO management
+• StockMovementService - Movement history
+• AuditLogService - Audit log viewing with filters
+
+================================================================================
+                         GUARDS & INTERCEPTORS
+================================================================================
+
+1. AUTH GUARD (Route Protection)
+=================================
+
+Location: src/app/core/guards/auth.guard.ts
+
+Purpose: Prevent unauthorized access to protected routes
+
+How It Works:
+-------------
+export const authGuard: CanActivateFn = (route, state) => {
+  const authService = inject(AuthService);
+  const router = inject(Router);
+
+  if (authService.isAuthenticated) {
+    return true;  // Allow access
+  }
+
+  // Redirect to login with return URL
+  router.navigate(['/auth/login'], { 
+    queryParams: { returnUrl: state.url } 
+  });
+  return false;
+};
+
+Applied to Routes:
+------------------
+{
+  path: '',
+  component: LayoutComponent,
+  canActivate: [authGuard],  // ← Guard applied here
+  children: [
+    { path: 'dashboard', component: DashboardComponent },
+    { path: 'products', component: ProductListComponent },
+    // ... all protected routes
+  ]
+}
+
+Flow:
+-----
+1. User navigates to /products
+2. Guard checks authService.isAuthenticated
+3. If false → Redirect to /auth/login?returnUrl=/products
+4. User logs in successfully
+5. Redirect to returnUrl (/products)
+
+--------------------------------------------------------------------------------
+
+2. AUTH INTERCEPTOR (HTTP Request Modifier)
+============================================
+
+Location: src/app/core/interceptors/auth.interceptor.ts
+
+Purpose: Automatically add JWT token to all HTTP requests
+
+How It Works:
+-------------
+export const authInterceptor: HttpInterceptorFn = (req, next) => {
+  const authService = inject(AuthService);
+  const token = authService.getToken();
+
+  // Add Authorization header if token exists
+  if (token && !req.url.includes('/auth/')) {
+    req = req.clone({
+      setHeaders: {
+        Authorization: `Bearer ${token}`
+      }
+    });
+  }
+
+  return next(req).pipe(
+    catchError((error: HttpErrorResponse) => {
+      if (error.status === 401) {
+        authService.logout();  // Token expired
+      }
+      return throwError(() => error);
+    })
+  );
+};
+
+What It Does:
+-------------
+1. Intercepts EVERY HTTP request
+2. Gets JWT token from AuthService
+3. Clones request and adds Authorization header
+4. Skips auth endpoints (login, register)
+5. Catches 401 errors (unauthorized)
+6. Auto-logout if token invalid
+
+Before Interceptor:
+-------------------
+this.http.get('/api/v1/products')
+// Request: GET /api/v1/products
+
+After Interceptor:
+------------------
+// Request: GET /api/v1/products
+// Header: Authorization: Bearer eyJhbGciOiJIUzI1Ni...
+
+Benefits:
+---------
+• No need to manually add token to every request
+• Centralized error handling
+• Auto-logout on token expiry
+• Cleaner service code
+
+================================================================================
+                            ROUTING & NAVIGATION
+================================================================================
+
+ROUTE CONFIGURATION
+===================
+
+Location: src/app/app.routes.ts
+
+Route Structure:
+----------------
+1. Public Routes (No Auth Required)
+   - /auth/login
+   - /auth/register
+
+2. Protected Routes (Auth Required)
+   - / → Redirect to /dashboard
+   - /dashboard
+   - /products
+   - /inventory
+   - /warehouses
+   - /suppliers
+   - /orders
+   - /purchase-orders
+   - /stock-movements
+   - /audit-logs
+
+3. Wildcard Route
+   - /** → Redirect to /dashboard
+
+LAZY LOADING
+=============
+
+All feature components are lazy loaded:
+----------------------------------------
+{
+  path: 'products',
+  loadComponent: () => import('./features/products/product-list/product-list.component')
+    .then(m => m.ProductListComponent)
+}
+
+Benefits:
+---------
+• Smaller initial bundle size
+• Faster first load
+• Load features on demand
+• Better code splitting
+
+LAYOUT COMPONENT
+================
+
+Protected routes use LayoutComponent wrapper:
+---------------------------------------------
+{
+  path: '',
+  component: LayoutComponent,  // ← Sidebar + Toolbar
+  canActivate: [authGuard],
+  children: [
+    // All protected routes here
+  ]
+}
+
+Layout provides:
+----------------
+• Sidebar navigation
+• Top toolbar with user menu
+• Page title
+• Notifications icon
+• Responsive drawer
+
+NAVIGATION PROGRAMMATIC
+=======================
+
+Navigate in TypeScript:
+-----------------------
+constructor(private router: Router) {}
+
+// Simple navigation
+this.router.navigate(['/products']);
+
+// With route parameters
+this.router.navigate(['/products', productId]);
+
+// With query parameters
+this.router.navigate(['/products'], { 
+  queryParams: { category: 'Electronics' } 
+});
+
+// Navigate back
+this.location.back();
+
+NAVIGATION IN TEMPLATE
+======================
+
+<a routerLink="/products" routerLinkActive="active">Products</a>
+
+<button (click)="router.navigate(['/products'])">Go to Products</button>
+
+================================================================================
+                           UI/UX FEATURES & DESIGN
+================================================================================
+
+MATERIAL DESIGN THEME
+=====================
+
+Color Scheme:
+-------------
+• Primary: Purple-Blue Gradient (#667eea → #764ba2)
+• Accent: Vibrant Pink (#ff4081)
+• Warn: Red (#f44336)
+• Success: Green (#4caf50)
+
+Component-Specific Themes:
+---------------------------
+• Products: Blue theme
+• Inventory: Orange theme
+• Warehouses: Green theme
+• Suppliers: Pink theme
+• Orders: Purple theme
+
+ANIMATIONS & TRANSITIONS
+=========================
+
+Implemented Animations:
+-----------------------
+1. Fade-in on page load
+2. Slide-up for cards
+3. Hover effects on buttons
+4. Ripple effects (Material)
+5. Smooth page transitions
+6. Loading spinners
+
+Example Animation:
+------------------
+@Component({
+  animations: [
+    trigger('fadeIn', [
+      transition(':enter', [
+        style({ opacity: 0 }),
+        animate('300ms', style({ opacity: 1 }))
+      ])
+    ])
+  ]
+})
+
+RESPONSIVE DESIGN
+=================
+
+Breakpoints:
+------------
+• Mobile: < 600px
+• Tablet: 600px - 960px
+• Desktop: > 960px
+
+Responsive Features:
+--------------------
+• Sidebar collapses on mobile
+• Tables scroll horizontally
+• Cards stack vertically
+• Touch-friendly buttons
+• Mobile-first approach
+
+MATERIAL COMPONENTS USED
+========================
+
+Layout:
+-------
+• MatSidenavModule - Sidebar navigation
+• MatToolbarModule - Top toolbar
+• MatCardModule - Card containers
+
+Forms:
+------
+• MatFormFieldModule - Form inputs
+• MatInputModule - Text inputs
+• MatSelectModule - Dropdowns
+• MatDatepickerModule - Date pickers
+• MatCheckboxModule - Checkboxes
+
+Data Display:
+-------------
+• MatTableModule - Data tables
+• MatPaginatorModule - Pagination
+• MatSortModule - Column sorting
+• MatChipsModule - Status badges
+
+Buttons & Indicators:
+---------------------
+• MatButtonModule - Buttons
+• MatIconModule - Icons
+• MatProgressSpinnerModule - Spinners
+• MatBadgeModule - Notification badges
+
+Popups & Overlays:
+------------------
+• MatDialogModule - Modal dialogs
+• MatSnackBarModule - Toast messages
+• MatMenuModule - Dropdown menus
+• MatTooltipModule - Tooltips
+
+CUSTOM COMPONENTS
+=================
+
+1. Pagination Component
+-----------------------
+Reusable pagination controls
+• Previous/Next buttons
+• Page numbers
+• Page size selector
+• Total count display
+
+2. Confirm Dialog
+-----------------
+Confirmation modal for destructive actions
+• Custom message
+• Confirm/Cancel buttons
+• Returns Observable<boolean>
+
+3. Loading Spinner
+------------------
+Centered loading indicator
+• Shows during async operations
+• Overlay with semi-transparent background
+
+4. Layout Component
+-------------------
+Main application layout
+• Responsive sidebar
+• Top navigation bar
+• User menu
+• Notification bell
+
+CUSTOM PIPES
+============
+
+1. CurrencyFormatterPipe
+------------------------
+Format numbers as currency
+Input: 999.99
+Output: ₹999.99
+
+2. DateFormatterPipe
+--------------------
+Format dates consistently
+Input: 2026-04-29T10:30:00Z
+Output: Apr 29, 2026, 10:30 AM
+
+================================================================================
+                        END-TO-END FLOW EXAMPLES
+================================================================================
+
+FLOW 1: USER LOGIN & AUTHENTICATION
+====================================
+
+Step-by-Step Flow:
+------------------
+
+1. User Opens Application
+   URL: http://localhost:4200
+   → Router redirects to /dashboard
+
+2. Auth Guard Checks Authentication
+   → authGuard.canActivate() returns false
+   → Redirect to /auth/login
+
+3. User Sees Login Page
+   Component: LoginComponent
+   Form Fields:
+   - Email (required, email format)
+   - Password (required, min 6 chars)
+
+4. User Submits Login Form
+   Form Data:
+   {
+     email: 'admin@stockflow.com',
+     password: 'Admin@123'
+   }
+
+5. LoginComponent Calls AuthService
+   this.authService.login(credentials).subscribe(...)
+
+6. AuthService Sends HTTP Request
+   POST https://stockflow-pro.up.railway.app/api/v1/auth/login
+   Body: { email, password }
+
+7. Backend Validates Credentials
+   → Checks database
+   → Generates JWT token (15-min expiry)
+   → Generates refresh token (7-day expiry)
+
+8. Backend Returns Response
+   {
+     token: 'eyJhbGciOiJIUzI1Ni...',
+     refreshToken: 'guid...',
+     user: {
+       id: 'guid',
+       email: 'admin@stockflow.com',
+       firstName: 'Admin',
+       lastName: 'User',
+       role: 'Admin'
+     },
+     expiration: '2026-04-29T10:45:00Z'
+   }
+
+9. AuthService Stores Session
+   localStorage.setItem('access_token', response.token);
+   localStorage.setItem('refresh_token', response.refreshToken);
+   localStorage.setItem('current_user', JSON.stringify(response.user));
+   
+   this.currentUserSubject.next(response.user);
+
+10. LoginComponent Navigates to Dashboard
+    this.router.navigate(['/dashboard']);
+
+11. Dashboard Loads
+    → Auth guard allows access
+    → Component initializes
+    → Loads statistics
+    → Subscribes to real-time notifications
+
+12. Pusher Connection Established
+    → Connects to WebSocket
+    → Subscribes to 'stockflow-notifications' channel
+    → Ready to receive real-time updates
+
+User is now authenticated and dashboard is displayed!
+
+--------------------------------------------------------------------------------
+
+FLOW 2: CREATING A NEW PRODUCT
+===============================
+
+Step-by-Step Flow:
+------------------
+
+1. User Navigates to Products Page
+   Click sidebar: Products
+   URL: /products
+   Component: ProductListComponent
+
+2. Component Loads Initial Data
+   ngOnInit() {
+     this.loadProducts();
+     this.loadCategories();
+   }
+
+3. Load Products from API
+   this.productService.getPaged({ pageNumber: 1, pageSize: 10 })
+   
+   HTTP Request:
+   GET https://stockflow-pro.up.railway.app/api/v1/products/paged?pageNumber=1&pageSize=10
+   Header: Authorization: Bearer <token>  (added by interceptor)
+
+4. Display Products in Table
+   <table mat-table [dataSource]="products">
+     <ng-container matColumnDef="name">
+       <th mat-header-cell *matHeaderCellDef>Name</th>
+       <td mat-cell *matCellDef="let product">{{product.name}}</td>
+     </ng-container>
+   </table>
+
+5. User Clicks "Add Product" Button
+   → Opens dialog modal
+   
+   this.dialog.open(ProductFormComponent, {
+     width: '600px',
+     data: { mode: 'create' }
+   });
+
+6. Product Form Dialog Opens
+   Component: ProductFormComponent
+   Form Fields:
+   - Name (required)
+   - SKU (required, unique)
+   - Category (required)
+   - Unit Price (required, > 0)
+   - Description (optional)
+
+7. User Fills Form
+   Form Data:
+   {
+     name: 'Gaming Laptop',
+     sku: 'LAP-001',
+     category: 'Electronics',
+     unitPrice: 1499.99,
+     description: 'High-performance gaming laptop'
+   }
+
+8. User Clicks "Create" Button
+   → Form validates (ReactiveFormsModule)
+   → If valid → Call service
+
+9. ProductFormComponent Calls Service
+   this.productService.create(formData).subscribe(...)
+
+10. HTTP Request Sent
+    POST https://stockflow-pro.up.railway.app/api/v1/products
+    Header: Authorization: Bearer <token>
+    Body: {
+      name: 'Gaming Laptop',
+      sku: 'LAP-001',
+      category: 'Electronics',
+      unitPrice: 1499.99,
+      description: 'High-performance gaming laptop'
+    }
+
+11. Backend Processes Request
+    → AuthInterceptor validates JWT
+    → ProductsController receives request
+    → ProductService validates data (FluentValidation)
+    → Checks for duplicate SKU
+    → Maps DTO → Entity
+    → Saves to database
+    → Creates audit log entry
+    → Invalidates cache
+    → Returns ProductDto
+
+12. Frontend Receives Response
+    {
+      id: 'new-guid',
+      name: 'Gaming Laptop',
+      sku: 'LAP-001',
+      category: 'Electronics',
+      unitPrice: 1499.99,
+      description: 'High-performance gaming laptop',
+      createdAt: '2026-04-29T10:35:00Z',
+      updatedAt: null,
+      isDeleted: false
+    }
+
+13. Dialog Closes & Shows Success Message
+    this.toastr.success('Product created successfully', 'Success');
+    this.dialogRef.close(true);
+
+14. Product List Refreshes
+    this.loadProducts();  // Reload table data
+
+15. New Product Appears in Table
+    User sees new row with gradient animation
+
+Product successfully created!
+
+--------------------------------------------------------------------------------
+
+FLOW 3: REAL-TIME LOW STOCK ALERT
+==================================
+
+Step-by-Step Flow:
+------------------
+
+1. Background Job Runs (Backend)
+   Hangfire job executes every hour:
+   InventoryJobs.CheckLowStockLevels()
+
+2. Job Queries Database
+   SELECT * FROM Inventories WHERE Quantity < Threshold
+
+3. Low Stock Item Found
+   Product: Gaming Laptop
+   Warehouse: Main Warehouse
+   Quantity: 5
+   Threshold: 10
+
+4. Backend Sends Email (Gmail Service)
+   To: admin@stockflow.com
+   Subject: Low Stock Alert
+   Body: Gaming Laptop in Main Warehouse is low (5 units)
+
+5. Backend Triggers Pusher Event
+   await pusherService.TriggerAsync('stockflow-notifications', 'low-stock-alert', {
+     productName: 'Gaming Laptop',
+     warehouseName: 'Main Warehouse',
+     quantity: 5,
+     threshold: 10
+   });
+
+6. Pusher Broadcasts to All Connected Clients
+   WebSocket message sent to all browsers
+
+7. Frontend Receives Event (PusherService)
+   this.channel.bind('low-stock-alert', (data) => {
+     this.notificationSubject.next({
+       title: 'Low Stock Alert',
+       message: `${data.productName} in ${data.warehouseName} is low (${data.quantity} units)`,
+       type: 'warning',
+       timestamp: new Date(),
+       data
+     });
+   });
+
+8. Dashboard Component Receives Notification
+   this.pusherService.notifications$.subscribe(notification => {
+     this.notifications = [notification, ...this.notifications];
+     this.toastr.warning(notification.message, notification.title);
+   });
+
+9. Toast Appears on Screen
+   ⚠️ Low Stock Alert
+   Gaming Laptop in Main Warehouse is low (5 units)
+   [Close] [View Inventory]
+
+10. Notification Added to Dashboard List
+    <div class="notification-item">
+      <mat-icon>warning</mat-icon>
+      <div class="notification-content">
+        <strong>Low Stock Alert</strong>
+        <span>Gaming Laptop in Main Warehouse is low (5 units)</span>
+        <small>2 minutes ago</small>
+      </div>
+    </div>
+
+11. User Clicks "View Inventory"
+    → Navigate to /inventory?productId=<id>
+    → Filter shows low stock items
+    → Red pulsing indicator on low stock rows
+
+Real-time alert delivered instantly!
+
+--------------------------------------------------------------------------------
+
+FLOW 4: APPLYING FILTERS & PAGINATION
+======================================
+
+Step-by-Step Flow:
+------------------
+
+1. User on Products Page
+   URL: /products
+   Showing: Page 1 of 8 (20 items per page, 150 total)
+
+2. User Enters Search Term
+   Search field: "laptop"
+   <input matInput formControlName="searchTerm" placeholder="Search...">
+
+3. User Selects Category
+   Dropdown: "Electronics"
+   <mat-select formControlName="category">
+     <mat-option value="Electronics">Electronics</mat-option>
+   </mat-select>
+
+4. User Sets Price Range
+   Min Price: 500
+   Max Price: 2000
+
+5. User Clicks "Apply Filters"
+   Form Data:
+   {
+     searchTerm: 'laptop',
+     category: 'Electronics',
+     minPrice: 500,
+     maxPrice: 2000
+   }
+
+6. Component Calls Service with Filters
+   this.productService.getPaged({
+     searchTerm: 'laptop',
+     category: 'Electronics',
+     minPrice: 500,
+     maxPrice: 2000,
+     pageNumber: 1,
+     pageSize: 20,
+     sortBy: 'name',
+     sortDescending: false
+   }).subscribe(...)
+
+7. HTTP Request Built with Query Params
+   GET https://stockflow-pro.up.railway.app/api/v1/products/paged?
+       searchTerm=laptop&
+       category=Electronics&
+       minPrice=500&
+       maxPrice=2000&
+       pageNumber=1&
+       pageSize=20&
+       sortBy=name&
+       sortDescending=false
+
+8. Backend Applies Filters
+   query = query.Where(p => 
+     p.Name.Contains("laptop") || p.SKU.Contains("laptop")
+   );
+   query = query.Where(p => p.Category == "Electronics");
+   query = query.Where(p => p.UnitPrice >= 500 && p.UnitPrice <= 2000);
+   query = query.OrderBy(p => p.Name);
+   query = query.Skip(0).Take(20);
+
+9. Backend Returns Filtered Results
+   {
+     items: [
+       { id: '...', name: 'Gaming Laptop', sku: 'LAP-001', ... },
+       { id: '...', name: 'Business Laptop', sku: 'LAP-002', ... },
+       // ... 18 more items
+     ],
+     pageNumber: 1,
+     pageSize: 20,
+     totalCount: 45,  // ← Filtered count
+     totalPages: 3    // ← Recalculated
+   }
+
+10. Table Updates with Filtered Results
+    this.products = response.items;
+    this.totalCount = response.totalCount;
+    
+11. Pagination Updates
+    Showing: Page 1 of 3 (20 items per page, 45 total)
+    [< Prev] [1] [2] [3] [Next >]
+
+12. User Clicks "Page 2"
+    this.pageNumber = 2;
+    this.loadProducts();
+    
+13. Same Filters Applied, Different Page
+    GET .../products/paged?...&pageNumber=2&pageSize=20
+
+14. Shows Items 21-40
+    Table smoothly animates to new data
+
+Filters and pagination working perfectly!
+
+================================================================================
+                           STATE MANAGEMENT APPROACH
+================================================================================
+
+RxJS OBSERVABLES & BEHAVIORSUBJECT
+===================================
+
+Why Not Redux/NgRx?
+--------------------
+For this application size, full state management is overkill.
+We use RxJS patterns for reactive state:
+
+1. Services hold state in BehaviorSubjects
+2. Components subscribe to Observables
+3. Change detection handles updates
+4. Simple, lightweight, performant
+
+Example: Current User State
+----------------------------
+AuthService:
+  private currentUserSubject = new BehaviorSubject<User | null>(null);
+  public currentUser$ = this.currentUserSubject.asObservable();
+
+Component:
+  currentUser$ = this.authService.currentUser$;
+  
+Template:
+  <div *ngIf="currentUser$ | async as user">
+    Welcome, {{ user.firstName }}!
+  </div>
+
+Benefits:
+---------
+• Reactive updates
+• Automatic change detection
+• Memory efficient
+• Easy to debug
+• TypeScript type safety
+
+LOCAL STORAGE FOR PERSISTENCE
+==============================
+
+What's Stored:
+--------------
+• access_token (JWT)
+• refresh_token (7-day)
+• current_user (user object)
+
+Why LocalStorage?
+-----------------
+• Survives page refresh
+• Simple API
+• No backend calls needed
+• Automatic persistence
+
+Security Consideration:
+-----------------------
+JWT tokens have short expiry (15 min) to minimize risk.
+Refresh tokens require backend validation.
+HTTPS prevents man-in-the-middle attacks.
+
+================================================================================
+                        PERFORMANCE OPTIMIZATIONS
+================================================================================
+
+IMPLEMENTED OPTIMIZATIONS
+=========================
+
+1. Lazy Loading
+   ✓ All feature modules loaded on demand
+   ✓ Smaller initial bundle size
+   ✓ Faster first load
+
+2. Change Detection Strategy
+   ✓ OnPush strategy where possible
+   ✓ Manual change detection for performance
+   ✓ Fewer unnecessary checks
+
+3. TrackBy Functions
+   ✓ Used in *ngFor loops
+   ✓ Prevents unnecessary DOM updates
+   ✓ Faster list rendering
+
+4. Production Build Optimizations
+   ✓ Ahead-of-Time (AOT) compilation
+   ✓ Tree shaking (dead code elimination)
+   ✓ Minification
+   ✓ Bundle optimization
+   ✓ Image optimization
+
+5. HTTP Caching
+   ✓ Categories cached in service
+   ✓ User profile cached
+   ✓ Reduces API calls
+
+6. Pagination
+   ✓ Load 10-20 items per page
+   ✓ Don't load all data at once
+   ✓ Server-side pagination
+
+7. Async Pipe
+   ✓ Automatic unsubscribe
+   ✓ Prevents memory leaks
+   ✓ Cleaner code
+
+BUILD SIZES
+===========
+
+Development Build:
+------------------
+• Initial chunk: ~2 MB (unoptimized)
+• Fast rebuild times
+
+Production Build:
+-----------------
+• Initial chunk: ~200-300 KB (compressed)
+• Lazy chunks: 50-100 KB each
+• Total bundle: ~500 KB (compressed)
+
+Build Command:
+--------------
+npm run build
+→ Output in dist/ folder
+→ Ready for deployment
+
+================================================================================
+                         TESTING IMPLEMENTATION
+================================================================================
+
+PLAYWRIGHT E2E TESTING
+=======================
+
+Test Coverage: 40+ Test Cases
+------------------------------
+
+1. Authentication Tests (auth.spec.ts)
+   ✓ Should display login page
+   ✓ Should show validation errors for empty fields
+   ✓ Should show error for invalid credentials
+   ✓ Should login successfully with valid credentials
+   ✓ Should redirect to dashboard after login
+   ✓ Should logout successfully
+
+2. Dashboard Tests (dashboard.spec.ts)
+   ✓ Should display dashboard
+   ✓ Should show statistics cards
+   ✓ Should show quick action buttons
+   ✓ Should navigate to pages from quick actions
+
+3. Products Tests (products.spec.ts)
+   ✓ Should display products page
+   ✓ Should display products table
+   ✓ Should display add product button
+   ✓ Should open product dialog
+   ✓ Should filter products by search term
+   ✓ Should filter by category
+   ✓ Should filter by price range
+   ✓ Should paginate products
+
+4. Inventory Tests (inventory.spec.ts)
+   ✓ Should display inventory page
+   ✓ Should show inventory table
+   ✓ Should highlight low stock items
+   ✓ Should update quantity
+   ✓ Should filter by warehouse
+
+5. Navigation Tests (navigation.spec.ts)
+   ✓ Should navigate to all pages
+   ✓ Should highlight active nav item
+   ✓ Should redirect to login when not authenticated
+
+6. User Journey Tests (user-journeys.spec.ts)
+   ✓ Complete product creation flow
+   ✓ Complete order processing flow
+   ✓ Complete stock movement flow
+
+Test Scripts:
+-------------
+npm run test:e2e              # Run all tests
+npm run test:e2e:headed       # Run with visible browser
+npm run test:e2e:ui           # Run in UI mode
+npm run test:e2e:debug        # Debug mode
+npm run test:e2e:chromium     # Chromium only
+npm run test:e2e:firefox      # Firefox only
+npm run test:e2e:webkit       # WebKit only
+npm run test:e2e:report       # View test report
+
+CI/CD Integration:
+------------------
+GitHub Actions workflow runs tests on every push
+Generates test report artifact
+Fails build if tests fail
+
+================================================================================
+                        ENVIRONMENT CONFIGURATION
+================================================================================
+
+DEVELOPMENT ENVIRONMENT
+=======================
+
+File: src/environments/environment.ts
+
+export const environment = {
+  production: false,
+  apiUrl: 'https://stockflow-pro.up.railway.app/api/v1',
+  pusher: {
+    appKey: '3a6db031b2381d1e78ec',
+    cluster: 'ap2',
+    channel: 'stockflow-notifications'
+  }
+};
+
+PRODUCTION ENVIRONMENT
+======================
+
+File: src/environments/environment.prod.ts
+
+export const environment = {
+  production: true,
+  apiUrl: 'https://stockflow-pro.up.railway.app/api/v1',
+  pusher: {
+    appKey: '3a6db031b2381d1e78ec',
+    cluster: 'ap2',
+    channel: 'stockflow-notifications'
+  }
+};
+
+IMPORTANT: Backend Already Deployed
+------------------------------------
+The frontend connects to the deployed backend on Railway.
+No need to run backend locally!
+
+Backend URL: https://stockflow-pro.up.railway.app
+Swagger: https://stockflow-pro.up.railway.app/swagger
+Health: https://stockflow-pro.up.railway.app/health
+
+================================================================================
+                          COMPONENT ARCHITECTURE
+================================================================================
+
+STANDALONE COMPONENTS
+=====================
+
+All components are standalone (no NgModules):
+----------------------------------------------
+@Component({
+  selector: 'app-product-list',
+  standalone: true,
+  imports: [
+    CommonModule,
+    ReactiveFormsModule,
+    MatTableModule,
+    // ... other imports
+  ],
+  templateUrl: './product-list.component.html',
+  styleUrls: ['./product-list.component.scss']
+})
+export class ProductListComponent { }
+
+Benefits:
+---------
+• Simpler architecture
+• No module boilerplate
+• Better tree-shaking
+• Easier to understand
+• Future-proof (Angular direction)
+
+COMPONENT LIFECYCLE
+===================
+
+Key Lifecycle Hooks Used:
+--------------------------
+
+1. ngOnInit()
+   → Component initialization
+   → Load initial data
+   → Setup subscriptions
+
+2. ngOnDestroy()
+   → Cleanup subscriptions
+   → Prevent memory leaks
+   → Cancel pending requests
+
+3. ngAfterViewInit()
+   → Access ViewChild elements
+   → Setup third-party plugins
+
+Example:
+--------
+export class ProductListComponent implements OnInit, OnDestroy {
+  private destroy$ = new Subject<void>();
+
+  ngOnInit(): void {
+    this.loadProducts();
+    
+    // Subscribe with auto-unsubscribe
+    this.productService.products$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(products => this.products = products);
+  }
+
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
+  }
+}
+
+DEPENDENCY INJECTION
+====================
+
+Modern Inject Function:
+-----------------------
+Instead of constructor injection, we use inject():
+
+Old Way (still works):
+  constructor(private productService: ProductService) {}
+
+New Way (preferred):
+  private readonly productService = inject(ProductService);
+
+Benefits:
+---------
+• Cleaner syntax
+• Works outside constructors
+• Better for functional programming
+• Type inference
+
+================================================================================
+                              FORM HANDLING
+================================================================================
+
+REACTIVE FORMS
+==============
+
+Why Reactive Forms?
+-------------------
+• Model-driven approach
+• Type-safe with TypeScript
+• Programmatic control
+• Easy to test
+• Complex validation support
+
+Example Product Form:
+---------------------
+export class ProductFormComponent implements OnInit {
+  private readonly fb = inject(FormBuilder);
+  
+  productForm: FormGroup = this.fb.group({
+    name: ['', [Validators.required, Validators.maxLength(100)]],
+    sku: ['', [Validators.required, Validators.maxLength(50)]],
+    category: ['', Validators.required],
+    unitPrice: [null, [Validators.required, Validators.min(0.01)]],
+    description: ['', Validators.maxLength(500)]
+  });
+
+  onSubmit(): void {
+    if (this.productForm.valid) {
+      const formData = this.productForm.value;
+      this.productService.create(formData).subscribe({
+        next: (product) => {
+          this.toastr.success('Product created successfully');
+          this.dialogRef.close(true);
+        },
+        error: (error) => {
+          this.toastr.error('Failed to create product');
+        }
+      });
+    }
+  }
+}
+
+Template:
+---------
+<form [formGroup]="productForm" (ngSubmit)="onSubmit()">
+  <mat-form-field>
+    <mat-label>Name</mat-label>
+    <input matInput formControlName="name" required>
+    <mat-error *ngIf="productForm.get('name')?.hasError('required')">
+      Name is required
+    </mat-error>
+  </mat-form-field>
+  
+  <mat-form-field>
+    <mat-label>Unit Price</mat-label>
+    <input matInput type="number" formControlName="unitPrice" required>
+    <mat-error *ngIf="productForm.get('unitPrice')?.hasError('min')">
+      Price must be greater than 0
+    </mat-error>
+  </mat-form-field>
+  
+  <button mat-raised-button type="submit" [disabled]="!productForm.valid">
+    Create Product
+  </button>
+</form>
+
+VALIDATION
+==========
+
+Built-in Validators:
+--------------------
+• Validators.required
+• Validators.email
+• Validators.min(value)
+• Validators.max(value)
+• Validators.minLength(length)
+• Validators.maxLength(length)
+• Validators.pattern(regex)
+
+Custom Validators:
+------------------
+Can create custom validators for complex rules:
+
+function skuValidator(control: AbstractControl): ValidationErrors | null {
+  const value = control.value;
+  if (value && !/^[A-Z]{3}-\d{3}$/.test(value)) {
+    return { invalidSku: true };
+  }
+  return null;
+}
+
+Form Status:
+------------
+• valid / invalid
+• touched / untouched
+• dirty / pristine
+• pending (async validation)
+
+Error Display:
+--------------
+<mat-error *ngIf="form.get('email')?.hasError('email')">
+  Please enter a valid email
+</mat-error>
+
+================================================================================
+                            HTTP COMMUNICATION
+================================================================================
+
+HTTP CLIENT
+===========
+
+All HTTP calls return Observables:
+-----------------------------------
+
+GET Request:
+  this.http.get<Product[]>(url).subscribe(products => { ... });
+
+POST Request:
+  this.http.post<Product>(url, data).subscribe(product => { ... });
+
+PUT Request:
+  this.http.put<Product>(url, data).subscribe(product => { ... });
+
+DELETE Request:
+  this.http.delete<void>(url).subscribe(() => { ... });
+
+ERROR HANDLING
+==============
+
+Centralized in Interceptor:
+----------------------------
+catchError((error: HttpErrorResponse) => {
+  if (error.status === 401) {
+    // Unauthorized - logout
+    this.authService.logout();
+  } else if (error.status === 404) {
+    // Not found
+    this.toastr.error('Resource not found');
+  } else if (error.status === 500) {
+    // Server error
+    this.toastr.error('Server error occurred');
+  }
+  return throwError(() => error);
+})
+
+Service-Level Error Handling:
+------------------------------
+this.productService.create(data).subscribe({
+  next: (product) => {
+    this.toastr.success('Created successfully');
+  },
+  error: (error) => {
+    console.error('Creation failed', error);
+    this.toastr.error('Failed to create product');
+  },
+  complete: () => {
+    this.loading = false;
+  }
+});
+
+HTTP HEADERS
+============
+
+Automatically Added by Interceptor:
+------------------------------------
+• Authorization: Bearer <token>
+• Content-Type: application/json
+• Accept: application/json
+
+Query Parameters:
+-----------------
+let params = new HttpParams();
+params = params.set('pageNumber', '1');
+params = params.set('pageSize', '20');
+params = params.set('searchTerm', 'laptop');
+
+this.http.get(url, { params }).subscribe(...);
+
+================================================================================
+                                  SUMMARY
+================================================================================
+
+FRONTEND ARCHITECTURE SUMMARY
+==============================
+
+Technology Stack:
+-----------------
+✓ Angular 21 - Modern framework with standalone components
+✓ TypeScript 5.9 - Type-safe development
+✓ Material Design 21 - Professional UI components
+✓ RxJS 7.8 - Reactive programming
+✓ Pusher - Real-time WebSocket notifications
+✓ ngx-toastr - Toast notifications
+✓ Playwright - E2E testing
+
+Architecture Patterns:
+----------------------
+✓ Component-Based Architecture - Reusable components
+✓ Service Layer Pattern - Business logic in services
+✓ Reactive Programming - RxJS Observables
+✓ Lazy Loading - Route-based code splitting
+✓ Guard Pattern - Route protection
+✓ Interceptor Pattern - HTTP request modification
+
+Key Features:
+-------------
+✓ JWT Authentication - Secure login with refresh tokens
+✓ Role-Based Access - Different permissions per role
+✓ Real-Time Notifications - WebSocket via Pusher
+✓ Pagination & Filtering - Server-side data handling
+✓ Responsive Design - Mobile-friendly layouts
+✓ Material Design - Consistent, accessible UI
+✓ Form Validation - Client-side validation
+✓ Error Handling - Centralized error management
+✓ Loading States - User feedback during operations
+✓ Toast Notifications - Non-blocking alerts
+
+10 Feature Modules:
+-------------------
+1. Authentication - Login, Register
+2. Dashboard - Statistics, Quick Actions, Notifications
+3. Products - CRUD with filters
+4. Inventory - Stock management, Low stock alerts
+5. Warehouses - Warehouse management
+6. Suppliers - Supplier management
+7. Orders - Order processing
+8. Purchase Orders - PO management
+9. Stock Movements - Movement tracking
+10. Audit Logs - Activity tracking
+
+Performance:
+------------
+✓ Lazy Loading - Faster initial load
+✓ OnPush Change Detection - Fewer checks
+✓ Production Build - 500KB compressed
+✓ Tree Shaking - Dead code elimination
+✓ Caching - Reduce API calls
+
+Testing:
+--------
+✓ 40+ Playwright E2E Tests
+✓ Multi-browser support
+✓ CI/CD integration
+✓ Comprehensive coverage
+
+This frontend is a PRODUCTION-READY, MODERN web application built with 
+Angular 21 following best practices for enterprise applications.
+
+The architecture is SCALABLE, MAINTAINABLE, PERFORMANT, and provides an 
+excellent user experience with Material Design and real-time features.
+
+================================================================================
+                                END OF DOCUMENT
+================================================================================

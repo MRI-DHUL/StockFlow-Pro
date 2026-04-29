@@ -1,0 +1,919 @@
+================================================================================
+                    STOCKFLOW PRO BACKEND - COMPREHENSIVE OVERVIEW
+================================================================================
+
+Date: April 29, 2026
+Technology: ASP.NET Core 8.0 | PostgreSQL | Clean Architecture
+Status: Production-Ready (0 Warnings, 0 Errors)
+
+================================================================================
+                           ARCHITECTURE & TECHNOLOGY STACK
+================================================================================
+
+CLEAN ARCHITECTURE WITH 3-TIER PATTERN
+---------------------------------------
+
+The backend is built using Clean Architecture with 4 distinct layers, 
+implementing a classic 3-Tier Pattern (Controller → Service → Repository):
+
+┌─────────────────────────────────────────────────────────┐
+│                    API Layer (Presentation)              │
+│  Controllers, Middleware, Health Checks, Program.cs     │
+└────────────────┬────────────────────────────────────────┘
+                 │ HTTP Requests/Responses
+                 ↓
+┌─────────────────────────────────────────────────────────┐
+│               Application Layer (Business)               │
+│  Services, DTOs, Validators, Interfaces, Mappings       │
+└────────────────┬────────────────────────────────────────┘
+                 │ Domain Objects
+                 ↓
+┌─────────────────────────────────────────────────────────┐
+│                   Domain Layer (Core)                    │
+│     Entities, Enums, Value Objects, Interfaces          │
+└────────────────┬────────────────────────────────────────┘
+                 │ Database Operations
+                 ↓
+┌─────────────────────────────────────────────────────────┐
+│            Infrastructure Layer (Data Access)            │
+│   DbContext, Repositories, External Services, Jobs      │
+└─────────────────────────────────────────────────────────┘
+
+================================================================================
+                        TECHNOLOGY STACK & RATIONALE
+================================================================================
+
+CORE FRAMEWORK
+--------------
+• ASP.NET Core 8.0 - Latest LTS version, high performance, cross-platform
+• C# 12 - Modern language features, nullable reference types
+
+DATABASE
+--------
+• PostgreSQL (Azure SQL) - Production-grade relational database
+• Entity Framework Core 8 - Modern ORM with migrations, change tracking
+• WHY? Strong data consistency, ACID compliance, relationships, complex queries
+
+AUTHENTICATION & AUTHORIZATION
+-------------------------------
+• ASP.NET Core Identity - User management, password hashing, roles
+• JWT (JSON Web Tokens) - Stateless authentication for APIs
+• Refresh Tokens - 7-day expiry, secure token rotation
+• WHY? Industry standard, scalable, supports SPA/mobile apps
+
+CACHING
+-------
+• Redis (StackExchange.Redis) - Distributed cache
+• Fallback: In-Memory Cache - When Redis unavailable
+• WHY? Reduces database load, improves response times (15-min cache)
+
+BACKGROUND JOBS
+---------------
+• Hangfire with PostgreSQL Storage - Persistent, reliable job scheduling
+• Jobs: Low stock alerts, token cleanup
+• WHY? Fire-and-forget, recurring jobs, dashboard UI
+
+VALIDATION & MAPPING
+---------------------
+• FluentValidation - Declarative, testable validation rules
+• Mapster - High-performance object mapping (faster than AutoMapper)
+• WHY? Clean separation, maintainable, type-safe
+
+LOGGING
+-------
+• Serilog - Structured logging to Console + File
+• WHY? Powerful, configurable, production-ready
+
+API FEATURES
+------------
+• Swagger/OpenAPI - Interactive API documentation
+• API Versioning (v1, v2) - Backward compatibility
+• Rate Limiting - Protection against abuse (5 policies)
+• Health Checks - PostgreSQL, Hangfire, Redis monitoring
+
+REAL-TIME & NOTIFICATIONS
+--------------------------
+• Pusher - WebSocket real-time notifications
+• MailKit (Gmail SMTP) - Email notifications
+• WHY? Instant alerts for low stock, order confirmations
+
+================================================================================
+                          LAYER-BY-LAYER BREAKDOWN
+================================================================================
+
+1. DOMAIN LAYER (Core Business Entities)
+=========================================
+
+Location: StockFlow.Domain/
+
+Contains:
+---------
+• 12 Entities:
+  - Product
+  - Warehouse
+  - Inventory
+  - Order & OrderItem
+  - Supplier
+  - PurchaseOrder & PurchaseOrderItem
+  - StockMovement
+  - ApplicationUser
+  - RefreshToken
+  - AuditLog
+
+• BaseEntity: All entities inherit with:
+  - Id (Guid)
+  - CreatedAt, UpdatedAt
+  - IsDeleted, DeletedAt
+  - Automatic soft delete support
+
+• Enums:
+  - OrderStatus
+  - StockMovementType
+  - PurchaseOrderStatus
+
+Why this design?
+----------------
+• No dependencies on other layers (pure domain logic)
+• Soft delete preserves data history
+• GUIDs prevent ID prediction attacks
+• Timestamps for audit trail
+
+Example Entity:
+---------------
+public class Product : BaseEntity
+{
+    public string Name { get; set; }
+    public string SKU { get; set; }
+    public string? Category { get; set; }
+    public decimal UnitPrice { get; set; }
+    public ICollection<Inventory> Inventories { get; set; }
+}
+
+================================================================================
+
+2. APPLICATION LAYER (Business Logic)
+======================================
+
+Location: StockFlow.Application/
+
+Contains:
+---------
+• 10 Service Implementations:
+  - ProductService
+  - InventoryService
+  - OrderService
+  - WarehouseService
+  - SupplierService
+  - PurchaseOrderService
+  - StockMovementService
+  - AuditLogService
+  - GmailService (email notifications)
+  - PusherNotificationService (real-time)
+
+• 33 DTOs (Data Transfer Objects):
+  - CreateProductDto, UpdateProductDto, ProductDto
+  - Separate DTOs for create, update, and response (security & validation)
+
+• 15 FluentValidation Validators:
+  - Validate required fields, ranges, formats
+  - Example: SKU must be unique, Price > 0
+
+• Mapster Configurations:
+  - Map entities ↔ DTOs automatically
+  - High performance, compile-time generation
+
+3-TIER PATTERN IN ACTION:
+--------------------------
+public class ProductService : IProductService
+{
+    private readonly IProductRepository _productRepository;
+    private readonly ICacheService _cacheService;
+    private readonly IUnitOfWork _unitOfWork;
+    
+    // Business logic layer - no database code!
+    public async Task<ProductDto> CreateAsync(CreateProductDto dto)
+    {
+        // 1. Validate (FluentValidation)
+        await _createValidator.ValidateAndThrowAsync(dto);
+        
+        // 2. Check business rules (duplicate SKU)
+        var existing = await _productRepository.FindBySKU(dto.SKU);
+        if (existing != null) throw new Exception();
+        
+        // 3. Map DTO → Entity
+        var product = _mapper.Map<Product>(dto);
+        
+        // 4. Save via Repository
+        await _unitOfWork.Products.AddAsync(product);
+        await _unitOfWork.SaveChangesAsync();
+        
+        // 5. Invalidate cache
+        await _cacheService.RemoveAsync("products_all");
+        
+        // 6. Map Entity → DTO and return
+        return _mapper.Map<ProductDto>(product);
+    }
+}
+
+Why this design?
+----------------
+• Service layer isolates business logic from controllers
+• DTOs prevent over-posting/under-posting attacks
+• Validation happens before database operations
+• Caching reduces repeated database queries
+
+================================================================================
+
+3. INFRASTRUCTURE LAYER (Data Access & External Services)
+==========================================================
+
+Location: StockFlow.Infrastructure/
+
+Contains:
+---------
+
+A. DbContext & Database:
+-------------------------
+public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
+{
+    // 12 DbSets for entities
+    public DbSet<Product> Products { get; set; }
+    public DbSet<Order> Orders { get; set; }
+    // ...
+    
+    // Automatic features in SaveChangesAsync:
+    // 1. Soft Delete (IsDeleted = true instead of DELETE)
+    // 2. Audit Trail (who, what, when, old/new values)
+    // 3. Timestamps (CreatedAt, UpdatedAt)
+}
+
+B. Repository Pattern:
+----------------------
+// Generic repository for CRUD
+IRepository<T> : GetAll, GetById, Add, Update, Delete
+
+// Specialized repositories for complex queries
+IProductRepository : IRepository<Product>
+    + GetPagedWithFilters()
+    + GetByCategory()
+    + GetBySKU()
+
+C. Unit of Work:
+----------------
+IUnitOfWork
+{
+    IProductRepository Products { get; }
+    IInventoryRepository Inventory { get; }
+    Task<int> SaveChangesAsync(); // Single transaction
+}
+
+D. External Services:
+---------------------
+• AuthService: Register, Login, Token generation
+• TokenService: JWT creation, refresh token validation
+• RedisCacheService: Distributed caching
+• GmailService: SMTP email via MailKit
+• PusherNotificationService: Real-time WebSocket events
+• HangfireJobService: Background job scheduling
+
+E. Background Jobs:
+-------------------
+// Runs every hour
+InventoryJobs.CheckLowStockLevels()
+    → Finds inventory < threshold
+    → Sends email + Pusher notification
+
+// Runs daily
+TokenCleanupJobs.CleanupExpiredTokens()
+    → Removes expired refresh tokens
+
+Why this design?
+----------------
+• Repository abstracts database operations
+• Unit of Work ensures transaction consistency
+• Background jobs don't block API requests
+• External services are testable via interfaces
+
+================================================================================
+
+4. API LAYER (Presentation)
+============================
+
+Location: StockFlow.API/
+
+Contains:
+---------
+
+A. Controllers (10 controllers, 45 endpoints):
+-----------------------------------------------
+[Authorize] // JWT required
+[ApiController]
+[ApiVersion("1.0")]
+[Route("api/v{version:apiVersion}/[controller]")]
+public class ProductsController : ControllerBase
+{
+    private readonly IProductService _productService;
+    
+    [HttpGet("paged")]
+    [ProducesResponseType(typeof(PagedResult<ProductDto>), 200)]
+    public async Task<ActionResult> GetPaged([FromQuery] ProductFilterParams filters)
+    {
+        var result = await _productService.GetPagedAsync(filters);
+        return Ok(result);
+    }
+}
+
+B. Program.cs (Startup Configuration):
+---------------------------------------
+1. CORS - Allow frontend origin
+2. Controllers + JSON
+3. Application Layer (Services, Mapster, FluentValidation)
+4. Infrastructure Layer (DbContext, Repositories, Identity, JWT)
+5. Hangfire (PostgreSQL storage)
+6. API Versioning (v1, v2)
+7. Rate Limiting (5 policies)
+8. Health Checks (PostgreSQL, Hangfire, Redis)
+9. Swagger (with JWT auth)
+10. Middleware (Exception handling, Auth, Rate limiting)
+
+C. Middleware:
+--------------
+• GlobalExceptionHandler: Catches all exceptions, returns JSON errors
+• HangfireAuthorizationFilter: Secures /hangfire dashboard
+
+D. Health Checks:
+-----------------
+• /health - Full check (DB + Hangfire + Redis)
+• /health/ready - Readiness check
+• /health/live - Liveness check
+
+================================================================================
+                       REQUEST FLOW EXAMPLE: Creating a Product
+================================================================================
+
+1. HTTP POST /api/v1/products
+   Body: { "name": "Laptop", "sku": "LAP-001", "unitPrice": 999.99 }
+   Header: Authorization: Bearer <JWT>
+
+2. Rate Limiter Middleware
+   ✓ Check if IP exceeded 100 req/min
+   
+3. JWT Authentication Middleware
+   ✓ Validate JWT signature
+   ✓ Extract user claims (userId, role)
+   
+4. ProductsController.Create()
+   ✓ Receive CreateProductDto
+   ✓ Call _productService.CreateAsync(dto)
+
+5. ProductService.CreateAsync()
+   ✓ FluentValidation: Check required fields, price > 0
+   ✓ Business Rule: Check if SKU already exists
+   ✓ Mapster: Map CreateProductDto → Product entity
+   ✓ Call _unitOfWork.Products.AddAsync(product)
+   ✓ Call _unitOfWork.SaveChangesAsync()
+   
+6. UnitOfWork.SaveChangesAsync()
+   → ApplicationDbContext.SaveChangesAsync()
+   
+7. ApplicationDbContext.SaveChangesAsync()
+   ✓ Set CreatedAt = UtcNow
+   ✓ Create AuditLog entry (who, what, when)
+   ✓ Execute INSERT INTO Products
+   ✓ Execute INSERT INTO AuditLogs
+   ✓ Commit transaction
+   
+8. ProductService (continued)
+   ✓ Invalidate cache: _cacheService.RemoveAsync("products_all")
+   ✓ Mapster: Map Product entity → ProductDto
+   ✓ Return ProductDto
+   
+9. ProductsController
+   ✓ Return 201 Created
+   ✓ Location header: /api/v1/products/{id}
+   ✓ Body: ProductDto JSON
+
+================================================================================
+                         KEY FEATURES & HOW THEY WORK
+================================================================================
+
+1. PAGINATION, FILTERING, SORTING
+==================================
+
+Request:
+--------
+GET /api/v1/products/paged?
+    pageNumber=1&pageSize=20&
+    searchTerm=laptop&
+    category=Electronics&
+    minPrice=500&maxPrice=2000&
+    sortBy=UnitPrice&sortDescending=false
+
+Response:
+---------
+{
+  "items": [...],
+  "pageNumber": 1,
+  "pageSize": 20,
+  "totalCount": 150,
+  "totalPages": 8
+}
+
+Implementation:
+---------------
+• Dynamic LINQ queries in repository
+• Expression trees for sorting
+• EF Core Skip() and Take() for paging
+
+--------------------------------------------------------------------------------
+
+2. JWT AUTHENTICATION
+======================
+
+Login:
+------
+POST /api/v1/auth/login
+{ "email": "admin@stockflowpro.com", "password": "Admin@123" }
+
+Response:
+---------
+{
+  "token": "eyJhbGciOiJIUzI1Ni...",  // 15-min expiry
+  "refreshToken": "guid...",           // 7-day expiry
+  "expiration": "2026-04-29T10:45:00Z"
+}
+
+Usage:
+------
+Authorization: Bearer eyJhbGciOiJIUzI1Ni...
+
+Flow:
+-----
+1. User logs in → Generate JWT + RefreshToken
+2. JWT stored in frontend (localStorage/cookie)
+3. Every API request includes JWT in header
+4. Backend validates JWT signature & expiry
+5. When JWT expires → Use refresh token to get new JWT
+
+Token Expiry Check:
+-------------------
+isAuthenticated getter:
+  1. Get token from localStorage
+  2. Decode JWT payload (base64)
+  3. Check exp claim: payload.exp * 1000 > Date.now()
+  4. Return true if not expired
+
+State Management:
+-----------------
+private currentUserSubject = new BehaviorSubject<User | null>(null);
+public currentUser$ = this.currentUserSubject.asObservable();
+
+Components subscribe to currentUser$ to get user info in real-time.
+
+--------------------------------------------------------------------------------
+
+3. AUDIT TRAIL
+==============
+
+Every change is tracked automatically:
+---------------------------------------
+{
+  "id": "guid",
+  "tableName": "Products",
+  "auditType": "Update",
+  "userId": "admin-guid",
+  "userName": "admin@stockflowpro.com",
+  "timestamp": "2026-04-29T10:30:00Z",
+  "oldValues": { "unitPrice": 999.99 },
+  "newValues": { "unitPrice": 899.99 },
+  "changedColumns": ["UnitPrice"],
+  "ipAddress": "192.168.1.1"
+}
+
+How?
+----
+ApplicationDbContext.SaveChangesAsync() intercepts all changes before saving.
+
+--------------------------------------------------------------------------------
+
+4. SOFT DELETE
+==============
+
+Request:
+--------
+DELETE /api/v1/products/{id}
+
+Database Operation:
+-------------------
+Instead of SQL DELETE:
+UPDATE Products SET IsDeleted = 1, DeletedAt = '2026-04-29' WHERE Id = ...
+
+Query Filter:
+-------------
+Global query filter automatically excludes soft-deleted:
+SELECT * FROM Products WHERE IsDeleted = 0
+
+Benefits:
+---------
+• Data recovery
+• Audit compliance
+• Referential integrity
+
+--------------------------------------------------------------------------------
+
+5. CACHING STRATEGY
+===================
+
+Read-through pattern:
+---------------------
+1. Check Redis cache
+2. If miss → Query database
+3. Store result in Redis (15-min expiry)
+4. Return result
+
+Write-through pattern:
+----------------------
+1. Update database
+2. Invalidate related cache keys
+3. Next read will rebuild cache
+
+Keys cached:
+------------
+• All products
+• Categories list
+• User profile
+
+--------------------------------------------------------------------------------
+
+6. RATE LIMITING (5 Policies)
+==============================
+
+Policies:
+---------
+• Global: 100 req/min per IP
+• Auth: 5 login attempts/min per IP
+• Strict: 10 req/min for sensitive ops
+• Token Bucket: 20 tokens/min (burst traffic)
+• Concurrency: Max 10 concurrent requests per IP
+
+Why?
+----
+Prevent DDoS, brute-force attacks, API abuse
+
+--------------------------------------------------------------------------------
+
+7. BACKGROUND JOBS (Hangfire)
+==============================
+
+Recurring job (every hour):
+---------------------------
+CheckLowStockLevels()
+    → Query: SELECT * FROM Inventories WHERE Quantity < Threshold
+    → Send email via GmailService
+    → Trigger Pusher notification
+    → Log warnings
+
+Fire-and-forget job:
+--------------------
+BackgroundJob.Enqueue(() => SendOrderConfirmationEmail(orderId));
+
+Dashboard:
+----------
+/hangfire - View job history, retries, failures
+
+--------------------------------------------------------------------------------
+
+8. REAL-TIME NOTIFICATIONS (Pusher)
+====================================
+
+Server-side trigger:
+--------------------
+await _pusherService.TriggerAsync("stock-updates", "low-stock", new {
+    productId,
+    warehouseName,
+    quantity,
+    threshold
+});
+
+Frontend listens:
+-----------------
+pusher.subscribe('stock-updates').bind('low-stock', (data) => {
+    toast.warning(`Low stock: ${data.warehouseName}`);
+});
+
+================================================================================
+                            DESIGN PATTERNS USED
+================================================================================
+
+1. 3-Tier Pattern - Controller → Service → Repository
+2. Repository Pattern - Data access abstraction
+3. Unit of Work - Transaction management
+4. Dependency Injection - Loose coupling, testability
+5. DTO Pattern - Data transfer security
+6. Factory Pattern - Token generation
+7. Strategy Pattern - Multiple rate limiting policies
+8. Observer Pattern - Real-time notifications
+9. Template Method - BaseEntity inheritance
+10. Singleton Pattern - Mapster configuration
+
+================================================================================
+                              SECURITY FEATURES
+================================================================================
+
+✓ JWT Authentication - Stateless, scalable
+✓ Role-Based Authorization - Admin, Manager, Staff
+✓ Password Hashing - ASP.NET Core Identity (PBKDF2)
+✓ Refresh Tokens - Secure token rotation
+✓ Rate Limiting - DDoS protection
+✓ CORS - Restrict frontend origins
+✓ DTOs - Prevent over-posting
+✓ FluentValidation - Input sanitization
+✓ Audit Trail - Track all changes
+✓ Soft Delete - Data preservation
+
+================================================================================
+                         PERFORMANCE OPTIMIZATIONS
+================================================================================
+
+✓ Redis Caching - 15-min cache reduces DB load
+✓ Async/Await - Non-blocking I/O
+✓ Pagination - Limit data transfer
+✓ EF Core Query Optimization - Include(), Select()
+✓ Mapster - Faster than AutoMapper
+✓ Connection Pooling - Reuse DB connections
+✓ Background Jobs - Offload heavy tasks
+
+================================================================================
+                           DEPLOYMENT (Railway)
+================================================================================
+
+• Database: PostgreSQL on Railway
+• API: ASP.NET Core 8 on Railway
+• Environment: Production (ASPNETCORE_ENVIRONMENT)
+• Port: Dynamic from PORT env variable
+• Health Checks: Kubernetes-ready
+• Logs: Serilog structured logging
+
+================================================================================
+                                 API ENDPOINTS
+================================================================================
+
+AUTHENTICATION (4 endpoints)
+-----------------------------
+POST   /api/v1/auth/register        - Register new user
+POST   /api/v1/auth/login           - Login (returns JWT + refresh token)
+POST   /api/v1/auth/refresh-token   - Get new JWT using refresh token
+POST   /api/v1/auth/revoke-token    - Revoke refresh token
+
+PRODUCTS (6 endpoints)
+----------------------
+GET    /api/v1/products/paged       - Paginated list with filters
+GET    /api/v1/products             - Get all products
+GET    /api/v1/products/{id}        - Get product by ID
+GET    /api/v1/products/categories  - Get all categories
+POST   /api/v1/products             - Create product
+PUT    /api/v1/products/{id}        - Update product
+DELETE /api/v1/products/{id}        - Soft delete product
+
+INVENTORY (5 endpoints)
+-----------------------
+GET    /api/v1/inventory/paged      - Paginated list with filters
+GET    /api/v1/inventory            - Get all inventory
+GET    /api/v1/inventory/{id}       - Get inventory by ID
+GET    /api/v1/inventory/low-stock  - Get low stock items
+PUT    /api/v1/inventory/{id}       - Update inventory quantity
+
+WAREHOUSES (5 endpoints)
+------------------------
+GET    /api/v1/warehouses           - Get all warehouses
+GET    /api/v1/warehouses/{id}      - Get warehouse by ID
+POST   /api/v1/warehouses           - Create warehouse
+PUT    /api/v1/warehouses/{id}      - Update warehouse
+DELETE /api/v1/warehouses/{id}      - Soft delete warehouse
+
+ORDERS (5 endpoints)
+--------------------
+GET    /api/v1/orders/paged         - Paginated list with filters
+GET    /api/v1/orders               - Get all orders
+GET    /api/v1/orders/{id}          - Get order by ID
+POST   /api/v1/orders               - Create order
+PUT    /api/v1/orders/{id}/status   - Update order status
+
+SUPPLIERS (5 endpoints)
+-----------------------
+GET    /api/v1/suppliers            - Get all suppliers
+GET    /api/v1/suppliers/{id}       - Get supplier by ID
+POST   /api/v1/suppliers            - Create supplier
+PUT    /api/v1/suppliers/{id}       - Update supplier
+DELETE /api/v1/suppliers/{id}       - Soft delete supplier
+
+PURCHASE ORDERS (5 endpoints)
+------------------------------
+GET    /api/v1/purchase-orders      - Get all purchase orders
+GET    /api/v1/purchase-orders/{id} - Get purchase order by ID
+POST   /api/v1/purchase-orders      - Create purchase order
+PUT    /api/v1/purchase-orders/{id}/status - Update status
+PUT    /api/v1/purchase-orders/{id}/receive - Receive items
+
+STOCK MOVEMENTS (4 endpoints)
+------------------------------
+GET    /api/v1/stock-movements      - Get all movements
+GET    /api/v1/stock-movements/{id} - Get movement by ID
+GET    /api/v1/stock-movements/product/{id} - Get by product
+POST   /api/v1/stock-movements      - Create movement
+
+AUDIT LOGS (2 endpoints)
+------------------------
+GET    /api/v1/audit-logs/paged     - Paginated list with filters
+GET    /api/v1/audit-logs/{id}      - Get audit log by ID
+
+HEALTH CHECKS (3 endpoints)
+---------------------------
+GET    /health                      - Full health check
+GET    /health/ready                - Readiness probe
+GET    /health/live                 - Liveness probe
+
+BACKGROUND JOBS
+---------------
+GET    /hangfire                    - Hangfire dashboard (secured)
+
+================================================================================
+                         COMPLETE FEATURES IMPLEMENTED
+================================================================================
+
+1. ✓ JWT Authentication & Authorization
+2. ✓ Pagination, Filtering & Sorting
+3. ✓ Redis Caching (with fallback to in-memory)
+4. ✓ Logging with Serilog (Console + File)
+5. ✓ Background Jobs with Hangfire (PostgreSQL storage)
+6. ✓ Health Checks (PostgreSQL, Hangfire, Redis)
+7. ✓ API Versioning (v1, v2)
+8. ✓ Rate Limiting (Global, Strict, Authenticated)
+9. ✓ Audit Trail (Full tracking of changes)
+10. ✓ Soft Delete (All entities)
+11. ✓ Gmail Email Notifications
+12. ✓ Pusher Real-Time Notifications
+
+================================================================================
+                           DATABASE SCHEMA (12 Tables)
+================================================================================
+
+Users
+-----
+Id (Guid, PK)
+Email
+PasswordHash
+FirstName
+LastName
+CreatedAt
+UpdatedAt
+IsDeleted
+
+Products
+--------
+Id (Guid, PK)
+Name
+SKU (Unique)
+Category
+UnitPrice
+Description
+CreatedAt
+UpdatedAt
+IsDeleted
+
+Warehouses
+----------
+Id (Guid, PK)
+Name
+Location
+Capacity
+CreatedAt
+UpdatedAt
+IsDeleted
+
+Inventories
+-----------
+Id (Guid, PK)
+ProductId (FK → Products)
+WarehouseId (FK → Warehouses)
+Quantity
+Threshold (Low stock alert level)
+CreatedAt
+UpdatedAt
+IsDeleted
+
+Orders
+------
+Id (Guid, PK)
+OrderNumber (Unique)
+CustomerName
+CustomerEmail
+OrderDate
+Status (Enum: Pending, Processing, Completed, Cancelled)
+TotalAmount
+CreatedAt
+UpdatedAt
+IsDeleted
+
+OrderItems
+----------
+Id (Guid, PK)
+OrderId (FK → Orders)
+ProductId (FK → Products)
+Quantity
+UnitPrice
+CreatedAt
+
+Suppliers
+---------
+Id (Guid, PK)
+Name
+ContactPerson
+Email
+Phone
+Address
+CreatedAt
+UpdatedAt
+IsDeleted
+
+PurchaseOrders
+--------------
+Id (Guid, PK)
+PurchaseOrderNumber (Unique)
+SupplierId (FK → Suppliers)
+OrderDate
+ExpectedDeliveryDate
+Status (Enum: Pending, Approved, Received, Cancelled)
+TotalAmount
+CreatedAt
+UpdatedAt
+IsDeleted
+
+PurchaseOrderItems
+------------------
+Id (Guid, PK)
+PurchaseOrderId (FK → PurchaseOrders)
+ProductId (FK → Products)
+Quantity
+UnitPrice
+CreatedAt
+
+StockMovements
+--------------
+Id (Guid, PK)
+ProductId (FK → Products)
+WarehouseId (FK → Warehouses)
+Quantity (Positive = IN, Negative = OUT)
+MovementType (Enum: Purchase, Sale, Transfer, Adjustment)
+Reference (Order/PO number)
+Notes
+CreatedAt
+
+RefreshTokens
+-------------
+Id (Guid, PK)
+UserId (FK → Users)
+Token
+ExpiresAt
+CreatedAt
+RevokedAt
+
+AuditLogs
+---------
+Id (Guid, PK)
+UserId
+UserName
+IpAddress
+TableName
+AuditType (Create, Update, Delete)
+OldValues (JSON)
+NewValues (JSON)
+ChangedColumns (JSON array)
+Timestamp
+
+================================================================================
+                                  SUMMARY
+================================================================================
+
+This backend is a PRODUCTION-READY, ENTERPRISE-GRADE inventory management API 
+built with:
+
+✓ Clean Architecture - 4 layers, SOLID principles
+✓ 3-Tier Pattern - Clear separation of concerns
+✓ 45 RESTful Endpoints - Comprehensive API
+✓ JWT + Refresh Tokens - Secure authentication
+✓ Pagination, Filtering, Sorting - Flexible queries
+✓ Redis Caching - Performance optimization
+✓ Hangfire Background Jobs - Automated tasks
+✓ Audit Trail + Soft Delete - Data compliance
+✓ Rate Limiting - Security protection
+✓ Real-Time Notifications - Pusher + Email
+✓ Health Checks - Monitoring & observability
+✓ 0 Warnings, 0 Errors - Quality code
+
+The architecture is SCALABLE, MAINTAINABLE, TESTABLE, and follows industry 
+best practices for modern web APIs.
+
+================================================================================
+                                END OF DOCUMENT
+================================================================================
