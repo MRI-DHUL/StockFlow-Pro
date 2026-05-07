@@ -43,7 +43,8 @@ try
         {
             policy.WithOrigins("https://stockflow-pro.infinityfreeapp.com")
                   .AllowAnyMethod()
-                  .AllowAnyHeader();
+                  .AllowAnyHeader()
+                  .AllowCredentials();
         });
     });
 

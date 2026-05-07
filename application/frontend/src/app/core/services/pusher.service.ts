@@ -33,37 +33,43 @@ export class PusherService {
   subscribeToChannel(channelName: string): void {
     this.channel = this.pusher.subscribe(channelName);
     
-    // Listen to common events
-    this.channel.bind('low-stock-alert', (data: any) => {
+    // Listen to low stock detected event (matches backend event name)
+    this.channel.bind('low-stock-detected', (data: any) => {
+      const message = `${data.productName} (${data.sku}) - Current: ${data.currentQuantity}, Threshold: ${data.threshold}`;
       this.notificationSubject.next({
         title: 'Low Stock Alert',
-        message: data.message || 'Stock level is low',
+        message: message,
         type: 'warning',
-        timestamp: new Date(),
+        timestamp: new Date(data.timestamp || new Date()),
         data
       });
     });
 
+    // Listen to order placed event
     this.channel.bind('order-placed', (data: any) => {
+      const message = `Order #${data.orderNumber} by ${data.customerName} - Total: $${data.totalAmount}`;
       this.notificationSubject.next({
-        title: 'New Order',
-        message: data.message || 'A new order has been placed',
+        title: 'New Order Placed',
+        message: message,
         type: 'info',
-        timestamp: new Date(),
+        timestamp: new Date(data.timestamp || new Date()),
         data
       });
     });
 
-    this.channel.bind('stock-update', (data: any) => {
+    // Listen to stock updated event (matches backend event name)
+    this.channel.bind('stock-updated', (data: any) => {
+      const message = `${data.productName} in ${data.warehouseName} - ${data.movementType}: ${data.quantity} units`;
       this.notificationSubject.next({
         title: 'Stock Updated',
-        message: data.message || 'Stock has been updated',
+        message: message,
         type: 'success',
-        timestamp: new Date(),
+        timestamp: new Date(data.timestamp || new Date()),
         data
       });
     });
 
+    // Keep system-test for testing purposes
     this.channel.bind('system-test', (data: any) => {
       this.notificationSubject.next({
         title: 'System Notification',

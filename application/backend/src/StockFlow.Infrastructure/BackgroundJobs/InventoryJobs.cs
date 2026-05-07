@@ -43,15 +43,15 @@ public class InventoryJobs
 
                     try
                     {
-                        // Send email notification
-                        await _emailService.SendLowStockAlertAsync(
+                        // Send real-time notification via Pusher FIRST for instant live notifications
+                        await _notificationService.SendLowStockNotificationAsync(
                             item.Product?.Name ?? "Unknown Product",
                             item.Product?.SKU ?? "N/A",
                             item.Quantity,
                             item.Threshold);
 
-                        // Send real-time notification via Pusher
-                        await _notificationService.SendLowStockNotificationAsync(
+                        // Send email notification after live notification
+                        await _emailService.SendLowStockAlertAsync(
                             item.Product?.Name ?? "Unknown Product",
                             item.Product?.SKU ?? "N/A",
                             item.Quantity,

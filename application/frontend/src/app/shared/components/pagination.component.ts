@@ -6,22 +6,8 @@ import { MatPaginatorModule, PageEvent } from '@angular/material/paginator';
   selector: 'app-pagination',
   standalone: true,
   imports: [CommonModule, MatPaginatorModule],
-  template: `
-    <mat-paginator
-      [length]="totalCount"
-      [pageSize]="pageSize"
-      [pageIndex]="pageNumber - 1"
-      [pageSizeOptions]="pageSizeOptions"
-      (page)="onPageChange($event)"
-      showFirstLastButtons>
-    </mat-paginator>
-  `,
-  styles: [`
-    :host {
-      display: block;
-      margin-top: 16px;
-    }
-  `]
+  templateUrl: './pagination.component.html',
+  styleUrls: ['./pagination.component.scss']
 })
 export class PaginationComponent {
   @Input() totalCount = 0;

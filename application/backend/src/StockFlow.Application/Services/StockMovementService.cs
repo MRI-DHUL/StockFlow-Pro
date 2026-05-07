@@ -1,6 +1,7 @@
 using FluentValidation;
 using MapsterMapper;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using StockFlow.Application.DTOs;
 using StockFlow.Application.Interfaces;
 using StockFlow.Domain.Entities;
@@ -14,17 +15,23 @@ public class StockMovementService : IStockMovementService
     private readonly IInventoryRepository _inventoryRepository;
     private readonly IMapper _mapper;
     private readonly IValidator<CreateStockMovementDto> _createValidator;
+    private readonly INotificationService _notificationService;
+    private readonly ILogger<StockMovementService> _logger;
 
     public StockMovementService(
         IRepository<StockMovement> stockMovementRepository,
         IInventoryRepository inventoryRepository,
         IMapper mapper,
-        IValidator<CreateStockMovementDto> createValidator)
+        IValidator<CreateStockMovementDto> createValidator,
+        INotificationService notificationService,
+        ILogger<StockMovementService> logger)
     {
         _stockMovementRepository = stockMovementRepository;
         _inventoryRepository = inventoryRepository;
         _mapper = mapper;
         _createValidator = createValidator;
+        _notificationService = notificationService;
+        _logger = logger;
     }
 
     public async Task<IEnumerable<StockMovementDto>> GetAllAsync(CancellationToken cancellationToken = default)
@@ -78,6 +85,40 @@ public class StockMovementService : IStockMovementService
             .Include(sm => sm.FromWarehouse)
             .Include(sm => sm.ToWarehouse)
             .FirstOrDefaultAsync(sm => sm.Id == movement.Id, cancellationToken);
+
+        // Send real-time notification via Pusher for stock updates
+        if (result != null)
+        {
+            try
+            {
+                var productName = result.Product?.Name ?? "Unknown Product";
+                var warehouseName = result.ToWarehouse?.Name ?? result.FromWarehouse?.Name ?? "Unknown Warehouse";
+                
+                await _notificationService.SendNotificationAsync(
+                    "stockflow-notifications",
+                    "stock-updated",
+                    new
+                    {
+                        type = "stock-updated",
+                        productId = result.ProductId,
+                        productName,
+                        warehouseName,
+                        movementType = result.Type.ToString(),
+                        quantity = result.Quantity,
+                        timestamp = DateTime.UtcNow
+                    });
+
+                _logger.LogInformation(
+                    "Stock update notification sent for product {ProductName} - Movement Type: {MovementType}",
+                    productName, result.Type);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex,
+                    "Failed to send stock update notification for movement {MovementId}", result.Id);
+                // Don't fail the stock movement if notification fails
+            }
+        }
 
         return result != null ? _mapper.Map<StockMovementDto>(result) : throw new InvalidOperationException("Failed to create stock movement");
     }

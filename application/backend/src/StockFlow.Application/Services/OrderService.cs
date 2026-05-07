@@ -162,32 +162,7 @@ public class OrderService : IOrderService
             .ThenInclude(oi => oi.Product)
             .FirstOrDefaultAsync(o => o.Id == order.Id, cancellationToken);
 
-        // Send order confirmation email and notification
-        if (!string.IsNullOrWhiteSpace(createOrderDto.CustomerEmail))
-        {
-            try
-            {
-                await _emailService.SendOrderConfirmationAsync(
-                    createOrderDto.CustomerEmail,
-                    createOrderDto.CustomerName ?? "Customer",
-                    order.Id,
-                    order.TotalAmount,
-                    cancellationToken);
-
-                _logger.LogInformation(
-                    "Order confirmation email sent to {CustomerEmail} for order {OrderId}",
-                    createOrderDto.CustomerEmail, order.Id);
-            }
-            catch (Exception emailEx)
-            {
-                _logger.LogError(emailEx,
-                    "Failed to send order confirmation email to {CustomerEmail} for order {OrderId}",
-                    createOrderDto.CustomerEmail, order.Id);
-                // Don't fail the order creation if email fails
-            }
-        }
-
-        // Send real-time notification via Pusher
+        // Send real-time notification via Pusher FIRST for instant live notifications
         try
         {
             await _notificationService.SendNotificationAsync(
@@ -210,6 +185,31 @@ public class OrderService : IOrderService
             _logger.LogError(notificationEx,
                 "Failed to send order placed notification for order {OrderId}", order.Id);
             // Don't fail the order creation if notification fails
+        }
+
+        // Send order confirmation email after live notification
+        if (!string.IsNullOrWhiteSpace(createOrderDto.CustomerEmail))
+        {
+            try
+            {
+                await _emailService.SendOrderConfirmationAsync(
+                    createOrderDto.CustomerEmail,
+                    createOrderDto.CustomerName ?? "Customer",
+                    order.Id,
+                    order.TotalAmount,
+                    cancellationToken);
+
+                _logger.LogInformation(
+                    "Order confirmation email sent to {CustomerEmail} for order {OrderId}",
+                    createOrderDto.CustomerEmail, order.Id);
+            }
+            catch (Exception emailEx)
+            {
+                _logger.LogError(emailEx,
+                    "Failed to send order confirmation email to {CustomerEmail} for order {OrderId}",
+                    createOrderDto.CustomerEmail, order.Id);
+                // Don't fail the order creation if email fails
+            }
         }
 
         return result != null ? _mapper.Map<OrderDto>(result) : throw new InvalidOperationException("Failed to create order");
