@@ -303,29 +303,6 @@ public class ProductServiceTests
         _unitOfWorkMock.Verify(u => u.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Once);
         _cacheServiceMock.Verify(c => c.RemoveAsync("products_all", It.IsAny<CancellationToken>()), Times.Once);
     }
-    public async Task UpdateAsync_WithInvalidId_ReturnsNull()
-    {
-        // Arrange
-        var productId = Guid.NewGuid();
-        var updateDto = new UpdateProductDto { Name = "Updated Product" };
-
-        _updateValidatorMock
-            .Setup(v => v.ValidateAsync(It.IsAny<ValidationContext<UpdateProductDto>>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync(new ValidationResult());
-
-        _unitOfWorkMock
-            .Setup(u => u.Products.GetByIdAsync(productId, It.IsAny<CancellationToken>()))
-            .ReturnsAsync((Product?)null);
-
-        // Act
-        var result = await _productService.UpdateAsync(productId, updateDto);
-
-        // Assert
-        result.Should().BeNull();
-
-        _unitOfWorkMock.Verify(u => u.Products.UpdateAsync(It.IsAny<Product>(), It.IsAny<CancellationToken>()), Times.Never);
-        _unitOfWorkMock.Verify(u => u.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Never);
-    }
 
     [Fact]
     public async Task DeleteAsync_WithValidId_DeletesProductAndReturnsTrue()
